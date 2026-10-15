@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Real-time webcam hand & eye tracking with Naruto jutsu VFX: Chidori, Rasengan, Sharingan, Water Dragon." />
+  <meta name="description" content="Real-time webcam hand & eye tracking with 9 Naruto jutsu VFX." />
   <title>NARUTO JUTSU · TRACKER</title>
 
   <style>
@@ -14,20 +14,20 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 16px;
       color: #cfe9ff;
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
     .app-container {
       display: flex;
       flex-wrap: wrap;
-      max-width: 1400px;
+      max-width: 1500px;
       width: 100%;
       background: rgba(10, 15, 20, 0.9);
       backdrop-filter: blur(12px);
       border: 1px solid #00e6ff;
       box-shadow: 0 0 30px rgba(0, 230, 255, 0.3), inset 0 0 20px rgba(0, 230, 255, 0.1);
-      border-radius: 28px;
+      border-radius: 24px;
       overflow: hidden;
     }
     .video-canvas-wrapper {
@@ -114,37 +114,47 @@
     }
     .error-msg.info { color: #6ec4ff; }
     .sidebar {
-      flex: 1 1 260px;
+      flex: 1 1 320px;
       background: rgba(5, 12, 18, 0.95);
-      padding: 24px 18px;
+      padding: 20px 16px;
       display: flex;
       flex-direction: column;
-      gap: 22px;
+      gap: 18px;
       border-left: 1px solid #1e3b4a;
     }
     .sidebar h2 {
       color: #aae0ff;
       font-weight: 300;
       letter-spacing: 3px;
-      font-size: 1.35rem;
+      font-size: 1.3rem;
       border-bottom: 1px solid #2a4d5e;
-      padding-bottom: 12px;
+      padding-bottom: 10px;
       text-transform: uppercase;
       text-shadow: 0 0 8px #00a6ff;
     }
-    .jutsu-list { display: flex; flex-direction: column; gap: 16px; }
+    .jutsu-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      overflow-y: auto;
+      max-height: 62vh;
+      padding-right: 4px;
+    }
+    .jutsu-grid::-webkit-scrollbar { width: 4px; }
+    .jutsu-grid::-webkit-scrollbar-thumb { background: #1e3b4a; border-radius: 2px; }
+
     .jutsu-item {
       background: #0b151e;
-      border-left: 4px solid #2a4d5e;
-      padding: 14px 16px;
-      border-radius: 0 16px 16px 0;
+      border-left: 3px solid #2a4d5e;
+      padding: 10px 10px;
+      border-radius: 0 12px 12px 0;
       transition: 0.2s;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.6);
     }
     .jutsu-item.active {
       border-left-color: #00e6ff;
       background: #0f1f2b;
-      box-shadow: 0 0 20px rgba(0, 230, 255, 0.3), inset 0 0 8px #00e6ff20;
+      box-shadow: 0 0 16px rgba(0, 230, 255, 0.35), inset 0 0 6px #00e6ff20;
     }
     .jutsu-name {
       display: flex;
@@ -152,41 +162,35 @@
       align-items: center;
       font-weight: 600;
       color: #b8e2ff;
-      letter-spacing: 1px;
-      margin-bottom: 8px;
-      font-size: 0.95rem;
+      letter-spacing: 0.6px;
+      margin-bottom: 6px;
+      font-size: 0.72rem;
     }
     .jutsu-status {
-      font-size: 0.8rem;
+      font-size: 0.65rem;
       color: #3c6e8c;
       display: flex;
       align-items: center;
-      gap: 8px;
-      letter-spacing: 1px;
+      gap: 6px;
+      letter-spacing: 0.8px;
     }
     .status-dot {
-      width: 10px; height: 10px; border-radius: 50%;
+      width: 7px; height: 7px; border-radius: 50%;
       background: #1a3a4a;
-      box-shadow: 0 0 5px #000;
+      box-shadow: 0 0 4px #000;
       transition: 0.2s;
     }
     .jutsu-item.active .status-dot {
       background: #00ff9d;
-      box-shadow: 0 0 15px #00ffaa, 0 0 5px #fff;
-    }
-    .jutsu-desc {
-      font-size: 0.72rem;
-      color: #547a8f;
-      margin-top: 6px;
-      letter-spacing: 0.3px;
+      box-shadow: 0 0 10px #00ffaa, 0 0 4px #fff;
     }
     .legend-badge {
-      font-size: 0.65rem;
+      font-size: 0.55rem;
       background: #122b36;
-      padding: 4px 8px;
-      border-radius: 30px;
+      padding: 3px 6px;
+      border-radius: 20px;
       color: #aad4ff;
-      letter-spacing: 1px;
+      letter-spacing: 0.8px;
     }
     .audio-toggle {
       background: #0e1c26;
@@ -195,7 +199,7 @@
       padding: 10px 14px;
       border-radius: 12px;
       cursor: pointer;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       letter-spacing: 2px;
       font-family: inherit;
       transition: 0.2s;
@@ -210,10 +214,10 @@
     .footer-note {
       margin-top: auto;
       color: #2d4a5c;
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       text-align: center;
       border-top: 1px solid #162d38;
-      padding-top: 20px;
+      padding-top: 14px;
       letter-spacing: 2px;
     }
   </style>
@@ -233,26 +237,42 @@
 
     <aside class="sidebar">
       <h2>JUTSU REGISTRY</h2>
-      <div class="jutsu-list">
-        <div class="jutsu-item" id="statusChidori">
-          <div class="jutsu-name"><span>⚡ CHIDORI</span><span class="legend-badge">LEFT HAND</span></div>
-          <div class="jutsu-status"><span class="status-dot"></span><span id="chidoriText">STANDBY</span></div>
-          <div class="jutsu-desc">Lightning aura follows left palm</div>
+      <div class="jutsu-grid">
+        <div class="jutsu-item" id="stChidori">
+          <div class="jutsu-name"><span>⚡ CHIDORI</span><span class="legend-badge">L-HAND</span></div>
+          <div class="jutsu-status"><span class="status-dot"></span><span id="txChidori">STANDBY</span></div>
         </div>
-        <div class="jutsu-item" id="statusRasengan">
-          <div class="jutsu-name"><span>🌀 RASENGAN</span><span class="legend-badge">RIGHT HAND</span></div>
-          <div class="jutsu-status"><span class="status-dot"></span><span id="rasenganText">STANDBY</span></div>
-          <div class="jutsu-desc">Spinning chakra sphere on right palm</div>
+        <div class="jutsu-item" id="stRasengan">
+          <div class="jutsu-name"><span>🌀 RASENGAN</span><span class="legend-badge">R-HAND</span></div>
+          <div class="jutsu-status"><span class="status-dot"></span><span id="txRasengan">STANDBY</span></div>
         </div>
-        <div class="jutsu-item" id="statusSharingan">
-          <div class="jutsu-name"><span>👁️ SHARINGAN</span><span class="legend-badge">EYES</span></div>
-          <div class="jutsu-status"><span class="status-dot"></span><span id="sharinganText">STANDBY</span></div>
-          <div class="jutsu-desc">Red tomoe overlay on blink</div>
+        <div class="jutsu-item" id="stSharingan">
+          <div class="jutsu-name"><span>👁️ SHARINGAN</span><span class="legend-badge">BLINK</span></div>
+          <div class="jutsu-status"><span class="status-dot"></span><span id="txSharingan">STANDBY</span></div>
         </div>
-        <div class="jutsu-item" id="statusWaterDragon">
-          <div class="jutsu-name"><span>🐉 WATER DRAGON</span><span class="legend-badge">SEQUENCE</span></div>
-          <div class="jutsu-status"><span class="status-dot"></span><span id="waterDragonText">IDLE</span></div>
-          <div class="jutsu-desc">Bring hands close together (chest seal)</div>
+        <div class="jutsu-item" id="stWaterDragon">
+          <div class="jutsu-name"><span>🐉 WATER DRAGON</span><span class="legend-badge">SEAL</span></div>
+          <div class="jutsu-status"><span class="status-dot"></span><span id="txWaterDragon">IDLE</span></div>
+        </div>
+        <div class="jutsu-item" id="stFireball">
+          <div class="jutsu-name"><span>🔥 FIREBALL</span><span class="legend-badge">HAND→MOUTH</span></div>
+          <div class="jutsu-status"><span class="status-dot"></span><span id="txFireball">IDLE</span></div>
+        </div>
+        <div class="jutsu-item" id="stRasenshuriken">
+          <div class="jutsu-name"><span>🌪️ RASENSHURIKEN</span><span class="legend-badge">2-HAND</span></div>
+          <div class="jutsu-status"><span class="status-dot"></span><span id="txRasenshuriken">IDLE</span></div>
+        </div>
+        <div class="jutsu-item" id="stKirin">
+          <div class="jutsu-name"><span>⚡ KIRIN</span><span class="legend-badge">HANDS APART→CLAP</span></div>
+          <div class="jutsu-status"><span class="status-dot"></span><span id="txKirin">IDLE</span></div>
+        </div>
+        <div class="jutsu-item" id="stMist">
+          <div class="jutsu-name"><span>🌫️ HIDDEN MIST</span><span class="legend-badge">BLINK+SPREAD</span></div>
+          <div class="jutsu-status"><span class="status-dot"></span><span id="txMist">IDLE</span></div>
+        </div>
+        <div class="jutsu-item" id="stAmaterasu">
+          <div class="jutsu-name"><span>🌑 AMATERASU</span><span class="legend-badge">BLINK+LOOK UP</span></div>
+          <div class="jutsu-status"><span class="status-dot"></span><span id="txAmaterasu">IDLE</span></div>
         </div>
       </div>
       <button class="audio-toggle" id="audioToggle">🔊 AUDIO: ON</button>
@@ -262,7 +282,7 @@
 
   <script type="module">
     /* ============================================================
-       MEDIAPIPE — ES module import
+       MEDIAPIPE
        ============================================================ */
     const VERSION = '0.10.12';
     const CDN = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${VERSION}`;
@@ -285,7 +305,7 @@
       HandLandmarker  = visionModule.HandLandmarker;
       FaceLandmarker  = visionModule.FaceLandmarker;
       if (!FilesetResolver || !HandLandmarker || !FaceLandmarker) {
-        throw new Error('MediaPipe module loaded but exports are missing.');
+        throw new Error('MediaPipe module loaded but exports missing.');
       }
     } catch (err) {
       clearTimeout(loadTimeout);
@@ -313,17 +333,20 @@
     const onboardingOverlay = document.getElementById('onboardingOverlay');
     const audioToggle = document.getElementById('audioToggle');
 
-    const chidoriItem = document.getElementById('statusChidori');
-    const rasenganItem = document.getElementById('statusRasengan');
-    const sharinganItem = document.getElementById('statusSharingan');
-    const waterDragonItem = document.getElementById('statusWaterDragon');
-    const chidoriText = document.getElementById('chidoriText');
-    const rasenganText = document.getElementById('rasenganText');
-    const sharinganText = document.getElementById('sharinganText');
-    const waterDragonText = document.getElementById('waterDragonText');
+    const statusEls = {
+      chidori:      { item: document.getElementById('stChidori'),      text: document.getElementById('txChidori') },
+      rasengan:     { item: document.getElementById('stRasengan'),     text: document.getElementById('txRasengan') },
+      sharingan:    { item: document.getElementById('stSharingan'),    text: document.getElementById('txSharingan') },
+      waterDragon:  { item: document.getElementById('stWaterDragon'),  text: document.getElementById('txWaterDragon') },
+      fireball:     { item: document.getElementById('stFireball'),     text: document.getElementById('txFireball') },
+      rasenshuriken:{ item: document.getElementById('stRasenshuriken'),text: document.getElementById('txRasenshuriken') },
+      kirin:        { item: document.getElementById('stKirin'),        text: document.getElementById('txKirin') },
+      mist:         { item: document.getElementById('stMist'),         text: document.getElementById('txMist') },
+      amaterasu:    { item: document.getElementById('stAmaterasu'),    text: document.getElementById('txAmaterasu') }
+    };
 
     /* ============================================================
-       AUDIO — synthesized SFX
+       AUDIO ENGINE
        ============================================================ */
     const Audio = (() => {
       let ctxA = null;
@@ -331,6 +354,8 @@
       let chidoriNode = null, chidoriGain = null;
       let rasenganOscs = [], rasenganGain = null, rasenganLFO = null;
       let sharinganOsc = null, sharinganGain = null;
+      let fireballNode = null, fireballGain = null;
+      let mistNode = null, mistGain = null;
       let noiseBuffer = null;
 
       function init() {
@@ -343,48 +368,31 @@
           for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
         } catch (e) { console.warn('Audio init failed', e); }
       }
-
       function ensureRunning() {
         init();
         if (ctxA && ctxA.state === 'suspended') ctxA.resume();
       }
 
-      /* CHIDORI — filtered noise crackle + sparkle highs */
+      /* CHIDORI */
       function chidoriStart() {
         ensureRunning();
         if (!ctxA || !enabled || chidoriNode) return;
         const src = ctxA.createBufferSource();
-        src.buffer = noiseBuffer;
-        src.loop = true;
-
+        src.buffer = noiseBuffer; src.loop = true;
         const bp = ctxA.createBiquadFilter();
-        bp.type = 'bandpass';
-        bp.frequency.value = 3400;
-        bp.Q.value = 1.4;
-
+        bp.type = 'bandpass'; bp.frequency.value = 3400; bp.Q.value = 1.4;
         const hp = ctxA.createBiquadFilter();
-        hp.type = 'highpass';
-        hp.frequency.value = 900;
-
+        hp.type = 'highpass'; hp.frequency.value = 900;
         const g = ctxA.createGain();
         g.gain.value = 0;
         g.gain.linearRampToValueAtTime(0.17, ctxA.currentTime + 0.15);
-
         const lfo = ctxA.createOscillator();
-        lfo.type = 'square';
-        lfo.frequency.value = 24;
-        const lfoGain = ctxA.createGain();
-        lfoGain.gain.value = 0.06;
-        lfo.connect(lfoGain).connect(g.gain);
-        lfo.start();
-
-        src.connect(bp).connect(hp).connect(g).connect(ctxA.destination);
-        src.start();
-
-        chidoriNode = { src, lfo };
-        chidoriGain = g;
+        lfo.type = 'square'; lfo.frequency.value = 24;
+        const lfoGain = ctxA.createGain(); lfoGain.gain.value = 0.06;
+        lfo.connect(lfoGain).connect(g.gain); lfo.start();
+        src.connect(bp).connect(hp).connect(g).connect(ctxA.destination); src.start();
+        chidoriNode = { src, lfo }; chidoriGain = g;
       }
-
       function chidoriStop() {
         if (!chidoriNode) return;
         const t = ctxA.currentTime;
@@ -395,38 +403,29 @@
         chidoriNode = null;
       }
 
-      /* RASENGAN — detuned sine stack + wobble */
+      /* RASENGAN */
       function rasenganStart() {
         ensureRunning();
         if (!ctxA || !enabled || rasenganOscs.length) return;
         const master = ctxA.createGain();
         master.gain.value = 0;
         master.gain.linearRampToValueAtTime(0.1, ctxA.currentTime + 0.3);
-        const freqs = [110, 165, 220, 330, 440];
-        freqs.forEach((f, i) => {
+        [110, 165, 220, 330, 440].forEach((f, i) => {
           const o = ctxA.createOscillator();
           o.type = i % 2 === 0 ? 'sine' : 'triangle';
-          o.frequency.value = f;
-          o.detune.value = (i - 2) * 8;
-          const g = ctxA.createGain();
-          g.gain.value = 0.5 / freqs.length;
-          o.connect(g).connect(master);
-          o.start();
+          o.frequency.value = f; o.detune.value = (i - 2) * 8;
+          const g = ctxA.createGain(); g.gain.value = 0.5 / 5;
+          o.connect(g).connect(master); o.start();
           rasenganOscs.push(o);
         });
         const lfo = ctxA.createOscillator();
-        lfo.type = 'sine';
-        lfo.frequency.value = 4.5;
-        const lfoGain = ctxA.createGain();
-        lfoGain.gain.value = 6;
+        lfo.type = 'sine'; lfo.frequency.value = 4.5;
+        const lfoGain = ctxA.createGain(); lfoGain.gain.value = 6;
         lfo.connect(lfoGain);
         rasenganOscs.forEach(o => lfoGain.connect(o.detune));
-        lfo.start();
-        rasenganLFO = lfo;
-        master.connect(ctxA.destination);
-        rasenganGain = master;
+        lfo.start(); rasenganLFO = lfo;
+        master.connect(ctxA.destination); rasenganGain = master;
       }
-
       function rasenganStop() {
         if (!rasenganOscs.length) return;
         const t = ctxA.currentTime;
@@ -435,29 +434,24 @@
         setTimeout(() => {
           rasenganOscs.forEach(o => { try { o.stop(); } catch (e) {} });
           try { rasenganLFO.stop(); } catch (e) {}
-          rasenganOscs = [];
-          rasenganLFO = null;
+          rasenganOscs = []; rasenganLFO = null;
         }, 300);
       }
 
-      /* SHARINGAN — low drone */
+      /* SHARINGAN */
       function sharinganStart() {
         ensureRunning();
         if (!ctxA || !enabled || sharinganOsc) return;
         const o = ctxA.createOscillator();
-        o.type = 'sawtooth';
-        o.frequency.value = 55;
+        o.type = 'sawtooth'; o.frequency.value = 55;
         const f = ctxA.createBiquadFilter();
-        f.type = 'lowpass';
-        f.frequency.value = 220;
+        f.type = 'lowpass'; f.frequency.value = 220;
         const g = ctxA.createGain();
         g.gain.value = 0;
         g.gain.linearRampToValueAtTime(0.06, ctxA.currentTime + 0.15);
-        o.connect(f).connect(g).connect(ctxA.destination);
-        o.start();
+        o.connect(f).connect(g).connect(ctxA.destination); o.start();
         sharinganOsc = o; sharinganGain = g;
       }
-
       function sharinganStop() {
         if (!sharinganOsc) return;
         const t = ctxA.currentTime;
@@ -467,73 +461,56 @@
         sharinganOsc = null;
       }
 
-      /* WATER DRAGON — massive layered roar with rushing water */
+      /* WATER DRAGON */
       function waterDragonRoar() {
         ensureRunning();
         if (!ctxA || !enabled) return;
-        const t = ctxA.currentTime;
-        const dur = 2.6;
-
-        /* 1) Low dragon rumble — swept saw */
+        const t = ctxA.currentTime, dur = 2.6;
         const o = ctxA.createOscillator();
         o.type = 'sawtooth';
         o.frequency.setValueAtTime(55, t);
         o.frequency.exponentialRampToValueAtTime(180, t + 0.5);
         o.frequency.exponentialRampToValueAtTime(45, t + dur);
-
         const lp = ctxA.createBiquadFilter();
         lp.type = 'lowpass';
         lp.frequency.setValueAtTime(400, t);
         lp.frequency.exponentialRampToValueAtTime(1800, t + 0.4);
         lp.frequency.exponentialRampToValueAtTime(300, t + dur);
         lp.Q.value = 2;
-
         const g1 = ctxA.createGain();
         g1.gain.setValueAtTime(0, t);
         g1.gain.linearRampToValueAtTime(0.28, t + 0.2);
         g1.gain.linearRampToValueAtTime(0.12, t + 1.4);
         g1.gain.linearRampToValueAtTime(0, t + dur);
-
         o.connect(lp).connect(g1).connect(ctxA.destination);
-        o.start(t);
-        o.stop(t + dur + 0.1);
+        o.start(t); o.stop(t + dur + 0.1);
 
-        /* 2) Rushing water — filtered noise with sweeping bandpass */
         const src = ctxA.createBufferSource();
-        src.buffer = noiseBuffer;
-        src.loop = true;
-
+        src.buffer = noiseBuffer; src.loop = true;
         const bp = ctxA.createBiquadFilter();
         bp.type = 'bandpass';
         bp.frequency.setValueAtTime(400, t);
         bp.frequency.exponentialRampToValueAtTime(2200, t + 0.6);
         bp.frequency.exponentialRampToValueAtTime(600, t + dur);
         bp.Q.value = 1.2;
-
         const g2 = ctxA.createGain();
         g2.gain.setValueAtTime(0, t);
         g2.gain.linearRampToValueAtTime(0.22, t + 0.25);
         g2.gain.linearRampToValueAtTime(0.15, t + 1.2);
         g2.gain.linearRampToValueAtTime(0, t + dur);
-
         src.connect(bp).connect(g2).connect(ctxA.destination);
-        src.start(t);
-        src.stop(t + dur + 0.1);
+        src.start(t); src.stop(t + dur + 0.1);
 
-        /* 3) Splash burst at start */
         const splash = ctxA.createBufferSource();
         splash.buffer = noiseBuffer;
         const sf = ctxA.createBiquadFilter();
-        sf.type = 'highpass';
-        sf.frequency.value = 1600;
+        sf.type = 'highpass'; sf.frequency.value = 1600;
         const sg = ctxA.createGain();
         sg.gain.setValueAtTime(0.28, t);
         sg.gain.exponentialRampToValueAtTime(0.001, t + 0.9);
         splash.connect(sf).connect(sg).connect(ctxA.destination);
-        splash.start(t);
-        splash.stop(t + 1.0);
+        splash.start(t); splash.stop(t + 1.0);
 
-        /* 4) Sub-bass impact thump */
         const sub = ctxA.createOscillator();
         sub.type = 'sine';
         sub.frequency.setValueAtTime(90, t);
@@ -542,16 +519,187 @@
         subG.gain.setValueAtTime(0.35, t);
         subG.gain.exponentialRampToValueAtTime(0.001, t + 0.7);
         sub.connect(subG).connect(ctxA.destination);
-        sub.start(t);
-        sub.stop(t + 0.8);
+        sub.start(t); sub.stop(t + 0.8);
+      }
+
+      /* FIREBALL — continuous roaring fire */
+      function fireballStart() {
+        ensureRunning();
+        if (!ctxA || !enabled || fireballNode) return;
+        const src = ctxA.createBufferSource();
+        src.buffer = noiseBuffer; src.loop = true;
+        const lp = ctxA.createBiquadFilter();
+        lp.type = 'lowpass'; lp.frequency.value = 1200; lp.Q.value = 2;
+        const g = ctxA.createGain();
+        g.gain.value = 0;
+        g.gain.linearRampToValueAtTime(0.22, ctxA.currentTime + 0.3);
+        // Add rumble
+        const rumble = ctxA.createOscillator();
+        rumble.type = 'sawtooth'; rumble.frequency.value = 65;
+        const rg = ctxA.createGain(); rg.gain.value = 0.06;
+        rumble.connect(rg).connect(g);
+        rumble.start();
+        src.connect(lp).connect(g).connect(ctxA.destination); src.start();
+        fireballNode = { src, rumble }; fireballGain = g;
+      }
+      function fireballStop() {
+        if (!fireballNode) return;
+        const t = ctxA.currentTime;
+        fireballGain.gain.cancelScheduledValues(t);
+        fireballGain.gain.linearRampToValueAtTime(0, t + 0.4);
+        setTimeout(() => {
+          try { fireballNode.src.stop(); } catch (e) {}
+          try { fireballNode.rumble.stop(); } catch (e) {}
+          fireballNode = null;
+        }, 500);
+      }
+
+      /* RASENSHURIKEN — one-shot whoosh+impact */
+      function rasenshurikenCast() {
+        ensureRunning();
+        if (!ctxA || !enabled) return;
+        const t = ctxA.currentTime;
+
+        // Rising whistle
+        const o = ctxA.createOscillator();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(400, t);
+        o.frequency.exponentialRampToValueAtTime(2400, t + 0.7);
+        const og = ctxA.createGain();
+        og.gain.setValueAtTime(0, t);
+        og.gain.linearRampToValueAtTime(0.15, t + 0.1);
+        og.gain.linearRampToValueAtTime(0.18, t + 0.6);
+        og.gain.exponentialRampToValueAtTime(0.001, t + 1.2);
+        o.connect(og).connect(ctxA.destination);
+        o.start(t); o.stop(t + 1.3);
+
+        // Wind shriek — filtered noise
+        const src = ctxA.createBufferSource();
+        src.buffer = noiseBuffer;
+        const bp = ctxA.createBiquadFilter();
+        bp.type = 'bandpass'; bp.frequency.value = 1800; bp.Q.value = 8;
+        const g = ctxA.createGain();
+        g.gain.setValueAtTime(0.18, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 1.0);
+        src.connect(bp).connect(g).connect(ctxA.destination);
+        src.start(t); src.stop(t + 1.0);
+
+        // Impact thud
+        const sub = ctxA.createOscillator();
+        sub.type = 'sine';
+        sub.frequency.setValueAtTime(120, t + 0.9);
+        sub.frequency.exponentialRampToValueAtTime(35, t + 1.3);
+        const sg = ctxA.createGain();
+        sg.gain.setValueAtTime(0, t + 0.9);
+        sg.gain.linearRampToValueAtTime(0.4, t + 0.95);
+        sg.gain.exponentialRampToValueAtTime(0.001, t + 1.5);
+        sub.connect(sg).connect(ctxA.destination);
+        sub.start(t + 0.9); sub.stop(t + 1.5);
+      }
+
+      /* KIRIN — massive lightning strike */
+      function kirinStrike() {
+        ensureRunning();
+        if (!ctxA || !enabled) return;
+        const t = ctxA.currentTime;
+
+        // Thunder crack — noise burst
+        const src = ctxA.createBufferSource();
+        src.buffer = noiseBuffer;
+        const hp = ctxA.createBiquadFilter();
+        hp.type = 'highpass'; hp.frequency.value = 400;
+        const g = ctxA.createGain();
+        g.gain.setValueAtTime(0.5, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 1.8);
+        src.connect(hp).connect(g).connect(ctxA.destination);
+        src.start(t); src.stop(t + 2.0);
+
+        // Low rumble
+        const sub = ctxA.createOscillator();
+        sub.type = 'sine';
+        sub.frequency.setValueAtTime(80, t);
+        sub.frequency.exponentialRampToValueAtTime(25, t + 1.5);
+        const sg = ctxA.createGain();
+        sg.gain.setValueAtTime(0.55, t);
+        sg.gain.exponentialRampToValueAtTime(0.001, t + 1.8);
+        sub.connect(sg).connect(ctxA.destination);
+        sub.start(t); sub.stop(t + 2.0);
+
+        // Beast roar — saw sweep
+        const o = ctxA.createOscillator();
+        o.type = 'sawtooth';
+        o.frequency.setValueAtTime(140, t);
+        o.frequency.exponentialRampToValueAtTime(40, t + 1.2);
+        const f = ctxA.createBiquadFilter();
+        f.type = 'lowpass'; f.frequency.value = 800; f.Q.value = 6;
+        const og = ctxA.createGain();
+        og.gain.setValueAtTime(0.25, t);
+        og.gain.exponentialRampToValueAtTime(0.001, t + 1.5);
+        o.connect(f).connect(og).connect(ctxA.destination);
+        o.start(t); o.stop(t + 1.5);
+      }
+
+      /* HIDDEN MIST — ambient looping */
+      function mistStart() {
+        ensureRunning();
+        if (!ctxA || !enabled || mistNode) return;
+        const src = ctxA.createBufferSource();
+        src.buffer = noiseBuffer; src.loop = true;
+        const lp = ctxA.createBiquadFilter();
+        lp.type = 'lowpass'; lp.frequency.value = 700;
+        const g = ctxA.createGain();
+        g.gain.value = 0;
+        g.gain.linearRampToValueAtTime(0.13, ctxA.currentTime + 0.8);
+        src.connect(lp).connect(g).connect(ctxA.destination); src.start();
+        mistNode = src; mistGain = g;
+      }
+      function mistStop() {
+        if (!mistNode) return;
+        const t = ctxA.currentTime;
+        mistGain.gain.cancelScheduledValues(t);
+        mistGain.gain.linearRampToValueAtTime(0, t + 0.8);
+        try { mistNode.stop(t + 0.9); } catch (e) {}
+        mistNode = null;
+      }
+
+      /* AMATERASU — dark, unsettling one-shot */
+      function amaterasuCast() {
+        ensureRunning();
+        if (!ctxA || !enabled) return;
+        const t = ctxA.currentTime;
+
+        // Dark choir-like drone
+        [55, 82, 110].forEach((f, i) => {
+          const o = ctxA.createOscillator();
+          o.type = 'sine';
+          o.frequency.value = f;
+          o.detune.value = i * 12;
+          const g = ctxA.createGain();
+          g.gain.setValueAtTime(0, t);
+          g.gain.linearRampToValueAtTime(0.12, t + 0.5);
+          g.gain.linearRampToValueAtTime(0.08, t + 2.5);
+          g.gain.linearRampToValueAtTime(0, t + 3.5);
+          o.connect(g).connect(ctxA.destination);
+          o.start(t); o.stop(t + 3.6);
+        });
+
+        // Black flame crackle
+        const src = ctxA.createBufferSource();
+        src.buffer = noiseBuffer;
+        const bp = ctxA.createBiquadFilter();
+        bp.type = 'bandpass'; bp.frequency.value = 900; bp.Q.value = 4;
+        const g = ctxA.createGain();
+        g.gain.setValueAtTime(0.12, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 2.8);
+        src.connect(bp).connect(g).connect(ctxA.destination);
+        src.start(t); src.stop(t + 3.0);
       }
 
       function setEnabled(v) {
         enabled = v;
         if (!v) {
-          chidoriStop();
-          rasenganStop();
-          sharinganStop();
+          chidoriStop(); rasenganStop(); sharinganStop();
+          fireballStop(); mistStop();
         }
       }
 
@@ -560,8 +708,12 @@
         rasenganStart, rasenganStop,
         sharinganStart, sharinganStop,
         waterDragonRoar,
-        setEnabled,
-        ensureRunning
+        fireballStart, fireballStop,
+        rasenshurikenCast,
+        kirinStrike,
+        mistStart, mistStop,
+        amaterasuCast,
+        setEnabled, ensureRunning
       };
     })();
 
@@ -581,30 +733,68 @@
 
     let leftHandLandmarks = null;
     let rightHandLandmarks = null;
-    let sharinganActive = false;
-    let chidoriPrevActive = false;
-    let rasenganPrevActive = false;
-    let sharinganPrevActive = false;
+    let faceLandmarks = null;
+    let faceBlendshapes = null;
 
+    let sharinganActive = false;
+    let chidoriPrev = false, rasenganPrev = false, sharinganPrev = false;
+    let fireballPrev = false, mistPrev = false;
+
+    // Hand close sequence (Water Dragon)
     let handsCloseFrames = 0;
     const CLOSE_FRAMES_THRESHOLD = 8;
     const CLOSE_DISTANCE_THRESHOLD = 0.15;
 
+    // Hands apart sequence (Kirin)
+    let handsApartFrames = 0;
+    const APART_FRAMES_THRESHOLD = 10;
+    const APART_DISTANCE_THRESHOLD = 0.35;
+    let kirinCharge = false;
+
+    // Rasenshuriken: right hand raised + left hand near right
+    let rasenshurikenActive = false;
+    let rasenshurikenTimer = 0;
+    const RASENSHURIKEN_DURATION = 90;
+
+    // Fireball: left or right hand near mouth with jaw open
+    let fireballActive = false;
+    let fireballTimer = 0;
+    const FIREBALL_DURATION = 120;
+
+    // Water Dragon
     let waterDragonActive = false;
     let waterDragonTimer = 0;
-    const WATER_DRAGON_DURATION = 240; // ~8 seconds @30fps
+    const WATER_DRAGON_DURATION = 240;
+
+    // Kirin
+    let kirinActive = false;
+    let kirinTimer = 0;
+    const KIRIN_DURATION = 120;
+
+    // Mist
+    let mistActive = false;
+    let mistTimer = 0;
+    const MIST_DURATION = 300;
+
+    // Amaterasu
+    let amaterasuActive = false;
+    let amaterasuTimer = 0;
+    const AMATERASU_DURATION = 240;
+    const amaterasuFlames = [];
+
+    // Progress trackers
     let waterDragonProgress = 0;
+    let kirinProgress = 0;
+    let mistProgress = 0;
+    let amaterasuProgress = 0;
 
-    let handLandmarker = null;
-    let faceLandmarker = null;
-    let animationFrame = null;
-    let lastVideoTime = -1;
+    let handLandmarker = null, faceLandmarker = null;
+    let animationFrame = null, lastVideoTime = -1;
 
-    // Splash particle pool
+    // Particle pools
     const splashParticles = [];
-
-    // Hand scale estimation history (smoothing)
-    let handScaleSmooth = null;
+    const fireParticles = [];
+    const lightningFlashes = [];
 
     /* ============================================================
        CANVAS SIZING
@@ -613,8 +803,7 @@
       const rect = video.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) return;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const nW = Math.floor(rect.width * dpr);
-      const nH = Math.floor(rect.height * dpr);
+      const nW = Math.floor(rect.width * dpr), nH = Math.floor(rect.height * dpr);
       if (canvas.width !== nW || canvas.height !== nH) {
         canvas.width = nW; canvas.height = nH;
         canvas.style.width = rect.width + 'px';
@@ -632,10 +821,9 @@
       errorMsg.classList.remove('info');
       errorMsg.textContent = '';
       Audio.ensureRunning();
-
       try {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          throw new Error('getUserMedia not supported in this browser.');
+          throw new Error('getUserMedia not supported.');
         }
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
@@ -648,7 +836,6 @@
           video.onerror = () => reject(new Error('Video failed to load stream.'));
         });
         await video.play();
-
         webcamReady = true;
         onboardingOverlay.classList.add('hidden');
         resizeCanvas();
@@ -703,16 +890,9 @@
       }
     }
 
-    /* ============================================================
-       HAND SIZE ESTIMATION
-       Returns approx hand length in canvas pixels (wrist → middle tip)
-       ============================================================ */
-    function estimateHandSize(landmarks, w, h) {
-      const wrist = landmarks[0];
-      const midTip = landmarks[12];
-      const dx = (midTip.x - wrist.x) * w;
-      const dy = (midTip.y - wrist.y) * h;
-      return Math.sqrt(dx * dx + dy * dy);
+    function estimateHandSize(lm, w, h) {
+      const wrist = lm[0], midTip = lm[12];
+      return Math.hypot((midTip.x - wrist.x) * w, (midTip.y - wrist.y) * h);
     }
 
     /* ============================================================
@@ -735,7 +915,7 @@
         }
       } catch (e) {}
 
-      /* Hands */
+      /* ---------- HANDS ---------- */
       leftHandLandmarks = null;
       rightHandLandmarks = null;
       if (handResults && handResults.landmarks && handResults.landmarks.length) {
@@ -751,16 +931,26 @@
         });
       }
 
-      /* Blink */
+      /* ---------- FACE ---------- */
+      faceLandmarks = null;
+      faceBlendshapes = null;
       sharinganActive = false;
+      if (faceResults && faceResults.faceLandmarks && faceResults.faceLandmarks.length) {
+        faceLandmarks = faceResults.faceLandmarks[0];
+      }
       if (faceResults && faceResults.faceBlendshapes && faceResults.faceBlendshapes.length) {
-        const shapes = faceResults.faceBlendshapes[0].categories;
-        const l = shapes.find(b => b.categoryName === 'eyeBlinkLeft');
-        const r = shapes.find(b => b.categoryName === 'eyeBlinkRight');
+        faceBlendshapes = faceResults.faceBlendshapes[0].categories;
+        const l = faceBlendshapes.find(b => b.categoryName === 'eyeBlinkLeft');
+        const r = faceBlendshapes.find(b => b.categoryName === 'eyeBlinkRight');
         sharinganActive = ((l ? l.score : 0) + (r ? r.score : 0)) / 2 > 0.5;
       }
 
-      /* Water dragon sequence */
+      const jawOpen = faceBlendshapes ?
+        (faceBlendshapes.find(b => b.categoryName === 'jawOpen')?.score || 0) : 0;
+
+      /* ---------- TRIGGERS ---------- */
+
+      // WATER DRAGON: hands close to chest
       if (leftHandLandmarks && rightHandLandmarks) {
         const dx = leftHandLandmarks[0].x - rightHandLandmarks[0].x;
         const dy = leftHandLandmarks[0].y - rightHandLandmarks[0].y;
@@ -776,66 +966,230 @@
         }
       } else handsCloseFrames = 0;
 
+      // KIRIN: hands apart wide, then bring together
+      if (leftHandLandmarks && rightHandLandmarks) {
+        const dx = leftHandLandmarks[0].x - rightHandLandmarks[0].x;
+        const dy = leftHandLandmarks[0].y - rightHandLandmarks[0].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > APART_DISTANCE_THRESHOLD) {
+          handsApartFrames++;
+          if (handsApartFrames >= APART_FRAMES_THRESHOLD) kirinCharge = true;
+        } else if (dist < CLOSE_DISTANCE_THRESHOLD && kirinCharge && !kirinActive) {
+          kirinActive = true;
+          kirinTimer = KIRIN_DURATION;
+          kirinCharge = false;
+          handsApartFrames = 0;
+          Audio.kirinStrike();
+          spawnLightningFlash();
+        } else {
+          handsApartFrames = Math.max(0, handsApartFrames - 1);
+        }
+      } else {
+        handsApartFrames = Math.max(0, handsApartFrames - 1);
+      }
+
+      // RASENSHURIKEN: both hands together, right hand visible
+      if (leftHandLandmarks && rightHandLandmarks) {
+        const dx = leftHandLandmarks[0].x - rightHandLandmarks[0].x;
+        const dy = leftHandLandmarks[0].y - rightHandLandmarks[0].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 0.22 && !rasenshurikenActive && !waterDragonActive && !kirinActive) {
+          // Avoid collision with water dragon — require right hand higher than left
+          if (rightHandLandmarks[0].y < leftHandLandmarks[0].y - 0.05) {
+            rasenshurikenActive = true;
+            rasenshurikenTimer = RASENSHURIKEN_DURATION;
+            Audio.rasenshurikenCast();
+          }
+        }
+      }
+
+      // FIREBALL: hand near face + jaw open
+      let fireballTrigger = false;
+      if (faceLandmarks && jawOpen > 0.4) {
+        const mouth = faceLandmarks[13]; // upper lip center
+        const checkHand = (lm) => {
+          if (!lm) return false;
+          const px = lm[9].x, py = lm[9].y;
+          const d = Math.hypot(px - mouth.x, py - mouth.y);
+          return d < 0.18;
+        };
+        if (checkHand(leftHandLandmarks) || checkHand(rightHandLandmarks)) {
+          fireballTrigger = true;
+        }
+      }
+      if (fireballTrigger && !fireballActive && !waterDragonActive && !kirinActive && !rasenshurikenActive) {
+        fireballActive = true;
+        fireballTimer = FIREBALL_DURATION;
+      }
+
+      // MIST: blink + hands apart
+      const mistTrigger = sharinganActive && leftHandLandmarks && rightHandLandmarks &&
+        Math.hypot(
+          (leftHandLandmarks[0].x - rightHandLandmarks[0].x),
+          (leftHandLandmarks[0].y - rightHandLandmarks[0].y)
+        ) > 0.3;
+      if (mistTrigger && !mistActive) {
+        mistActive = true;
+        mistTimer = MIST_DURATION;
+      }
+
+      // AMATERASU: blink + look up (nose above eye line)
+      let amaterasuTrigger = false;
+      if (sharinganActive && faceLandmarks) {
+        const nose = faceLandmarks[1];
+        const forehead = faceLandmarks[10];
+        const chin = faceLandmarks[152];
+        // Face tilted up if forehead-to-nose distance is compressed and chin is further down
+        const upDown = nose.y - forehead.y;
+        const chinDelta = chin.y - nose.y;
+        if (upDown < 0.05 && chinDelta > 0.12) amaterasuTrigger = true;
+      }
+      if (amaterasuTrigger && !amaterasuActive && faceLandmarks) {
+        amaterasuActive = true;
+        amaterasuTimer = AMATERASU_DURATION;
+        Audio.amaterasuCast();
+        // Spawn black flame particles at forehead
+        const fh = faceLandmarks[10];
+        for (let i = 0; i < 40; i++) {
+          amaterasuFlames.push({
+            x: fh.x, y: fh.y,
+            vx: (Math.random() - 0.5) * 0.008,
+            vy: -Math.random() * 0.006 - 0.002,
+            life: 1,
+            decay: 0.006 + Math.random() * 0.008,
+            size: 0.02 + Math.random() * 0.03
+          });
+        }
+      }
+
+      /* ---------- UPDATE TIMERS ---------- */
       if (waterDragonActive) {
         waterDragonTimer--;
         waterDragonProgress = 1 - waterDragonTimer / WATER_DRAGON_DURATION;
         if (waterDragonTimer <= 0) { waterDragonActive = false; waterDragonProgress = 0; }
       }
+      if (kirinActive) {
+        kirinTimer--;
+        kirinProgress = 1 - kirinTimer / KIRIN_DURATION;
+        if (kirinTimer <= 0) { kirinActive = false; kirinProgress = 0; }
+      }
+      if (rasenshurikenActive) {
+        rasenshurikenTimer--;
+        if (rasenshurikenTimer <= 0) rasenshurikenActive = false;
+      }
+      if (fireballActive) {
+        fireballTimer--;
+        if (fireballTimer <= 0) fireballActive = false;
+      }
+      if (mistActive) {
+        mistTimer--;
+        mistProgress = 1 - mistTimer / MIST_DURATION;
+        if (mistTimer <= 0) { mistActive = false; mistProgress = 0; }
+      }
+      if (amaterasuActive) {
+        amaterasuTimer--;
+        amaterasuProgress = 1 - amaterasuTimer / AMATERASU_DURATION;
+        if (amaterasuTimer <= 0) { amaterasuActive = false; amaterasuProgress = 0; }
+      }
 
-      /* Audio triggers */
-      const chidoriActive = !!leftHandLandmarks;
-      if (chidoriActive && !chidoriPrevActive) Audio.chidoriStart();
-      if (!chidoriActive && chidoriPrevActive) Audio.chidoriStop();
-      chidoriPrevActive = chidoriActive;
+      /* ---------- AUDIO TRIGGERS (looping) ---------- */
+      const chidoriOn = !!leftHandLandmarks;
+      if (chidoriOn && !chidoriPrev) Audio.chidoriStart();
+      if (!chidoriOn && chidoriPrev) Audio.chidoriStop();
+      chidoriPrev = chidoriOn;
 
-      const rasenganActive = !!rightHandLandmarks;
-      if (rasenganActive && !rasenganPrevActive) Audio.rasenganStart();
-      if (!rasenganActive && rasenganPrevActive) Audio.rasenganStop();
-      rasenganPrevActive = rasenganActive;
+      const rasenganOn = !!rightHandLandmarks && !rasenshurikenActive;
+      if (rasenganOn && !rasenganPrev) Audio.rasenganStart();
+      if (!rasenganOn && rasenganPrev) Audio.rasenganStop();
+      rasenganPrev = rasenganOn;
 
-      if (sharinganActive && !sharinganPrevActive) Audio.sharinganStart();
-      if (!sharinganActive && sharinganPrevActive) Audio.sharinganStop();
-      sharinganPrevActive = sharinganActive;
+      if (sharinganActive && !sharinganPrev) Audio.sharinganStart();
+      if (!sharinganActive && sharinganPrev) Audio.sharinganStop();
+      sharinganPrev = sharinganActive;
 
-      /* Render */
+      const fireballAudioOn = fireballActive;
+      if (fireballAudioOn && !fireballPrev) Audio.fireballStart();
+      if (!fireballAudioOn && fireballPrev) Audio.fireballStop();
+      fireballPrev = fireballAudioOn;
+
+      if (mistActive && !mistPrev) Audio.mistStart();
+      if (!mistActive && mistPrev) Audio.mistStop();
+      mistPrev = mistActive;
+
+      /* ---------- RENDER ---------- */
       const w = canvas.width, h = canvas.height;
       ctx.clearRect(0, 0, w, h);
 
-      if (sharinganActive && faceResults && faceResults.faceLandmarks && faceResults.faceLandmarks.length) {
-        drawSharinganOnFace(faceResults.faceLandmarks[0], w, h);
-      }
+      // MIST is a full-screen overlay — draw first so it's underneath
+      if (mistActive) drawMist(mistProgress, w, h, now);
 
-      if (leftHandLandmarks) {
+      // Sharingan overlays
+      if (sharinganActive && faceLandmarks) drawSharinganOnFace(faceLandmarks, w, h);
+
+      // Amaterasu flames
+      if (amaterasuActive || amaterasuFlames.length) updateAmaterasu(w, h);
+
+      // Chidori
+      if (leftHandLandmarks && !rasenshurikenActive && !kirinActive && !fireballActive) {
         drawChidori(leftHandLandmarks, w, h, now);
-        updateStatus(chidoriItem, chidoriText, true, 'ACTIVE');
-      } else updateStatus(chidoriItem, chidoriText, false, 'STANDBY');
+      }
+      updateStatus(statusEls.chidori, leftHandLandmarks && !rasenshurikenActive && !kirinActive && !fireballActive);
 
-      if (rightHandLandmarks) {
+      // Rasengan / Rasenshuriken
+      if (rightHandLandmarks && !rasenshurikenActive && !fireballActive && !kirinActive) {
         drawRasengan(rightHandLandmarks, w, h, now);
-        updateStatus(rasenganItem, rasenganText, true, 'ACTIVE');
-      } else updateStatus(rasenganItem, rasenganText, false, 'STANDBY');
+      }
+      updateStatus(statusEls.rasengan, rightHandLandmarks && !rasenshurikenActive && !fireballActive && !kirinActive);
 
-      updateStatus(sharinganItem, sharinganText, sharinganActive, sharinganActive ? 'ACTIVE' : 'STANDBY');
+      // Rasenshuriken
+      if (rasenshurikenActive) {
+        const anchor = rightHandLandmarks || leftHandLandmarks;
+        if (anchor) drawRasenshuriken(anchor, w, h, now, rasenshurikenTimer / RASENSHURIKEN_DURATION);
+      }
+      updateStatus(statusEls.rasenshuriken, rasenshurikenActive, rasenshurikenActive ? 'CAST' : 'IDLE');
 
-      if (waterDragonActive) {
-        updateStatus(waterDragonItem, waterDragonText, true, 'CASTING');
-        drawWaterDragon(waterDragonProgress, w, h, now);
-      } else if (handsCloseFrames > 0) {
-        updateStatus(waterDragonItem, waterDragonText, false, 'CHARGING');
-      } else updateStatus(waterDragonItem, waterDragonText, false, 'IDLE');
+      // Sharingan
+      updateStatus(statusEls.sharingan, sharinganActive);
 
-      updateParticles();
+      // Water Dragon
+      if (waterDragonActive) drawWaterDragon(waterDragonProgress, w, h, now);
+      updateStatus(statusEls.waterDragon, waterDragonActive,
+        waterDragonActive ? 'CASTING' : (handsCloseFrames > 0 ? 'CHARGING' : 'IDLE'));
+
+      // Fireball
+      if (fireballActive) {
+        const mouth = faceLandmarks ? { x: faceLandmarks[13].x, y: faceLandmarks[13].y } : { x: 0.5, y: 0.5 };
+        drawFireball(mouth, w, h, now, fireballTimer / FIREBALL_DURATION);
+        spawnFireParticles(mouth, w, h);
+      }
+      updateStatus(statusEls.fireball, fireballActive, fireballActive ? 'CASTING' : 'IDLE');
+
+      // Kirin
+      if (kirinActive) drawKirin(kirinProgress, w, h, now);
+      updateStatus(statusEls.kirin, kirinActive,
+        kirinActive ? 'STRIKE' : (kirinCharge ? 'CHARGED' : 'IDLE'));
+
+      // Mist
+      updateStatus(statusEls.mist, mistActive, mistActive ? 'ACTIVE' : 'IDLE');
+
+      // Amaterasu
+      updateStatus(statusEls.amaterasu, amaterasuActive,
+        amaterasuActive ? 'BURNING' : 'IDLE');
+
+      // Particles
+      updateSplashes();
+      updateFireParticles(w, h);
 
       animationFrame = requestAnimationFrame(predictLoop);
     }
 
-    function updateStatus(itemEl, textEl, isActive, label) {
-      itemEl.classList.toggle('active', isActive);
-      textEl.textContent = label;
+    function updateStatus(ref, isActive, label) {
+      ref.item.classList.toggle('active', isActive);
+      ref.text.textContent = label || (isActive ? 'ACTIVE' : 'STANDBY');
     }
 
     /* ============================================================
-       PARTICLES (water splash)
+       PARTICLES
        ============================================================ */
     function spawnSplashes(w, h, count = 80) {
       for (let i = 0; i < count; i++) {
@@ -844,19 +1198,15 @@
           y: h * 0.55 + (Math.random() - 0.5) * h * 0.35,
           vx: (Math.random() - 0.5) * 8,
           vy: -Math.random() * 6 - 1,
-          life: 1,
-          decay: 0.01 + Math.random() * 0.01,
+          life: 1, decay: 0.01 + Math.random() * 0.01,
           size: 2 + Math.random() * 6
         });
       }
     }
-
-    function updateParticles() {
+    function updateSplashes() {
       for (let i = splashParticles.length - 1; i >= 0; i--) {
         const p = splashParticles[i];
-        p.x += p.vx; p.y += p.vy;
-        p.vy += 0.18;
-        p.vx *= 0.98;
+        p.x += p.vx; p.y += p.vy; p.vy += 0.18; p.vx *= 0.98;
         p.life -= p.decay;
         if (p.life <= 0) { splashParticles.splice(i, 1); continue; }
         ctx.save();
@@ -868,24 +1218,67 @@
         ctx.restore();
       }
     }
+    function spawnFireParticles(mouth, w, h) {
+      for (let i = 0; i < 6; i++) {
+        fireParticles.push({
+          x: mouth.x * w + (Math.random() - 0.5) * 30,
+          y: mouth.y * h + (Math.random() - 0.5) * 30,
+          vx: (Math.random() - 0.5) * 6,
+          vy: -Math.random() * 4 - 1,
+          life: 1, decay: 0.02 + Math.random() * 0.015,
+          size: 4 + Math.random() * 8,
+          hue: 20 + Math.random() * 30
+        });
+      }
+    }
+    function updateFireParticles(w, h) {
+      for (let i = fireParticles.length - 1; i >= 0; i--) {
+        const p = fireParticles[i];
+        p.x += p.vx; p.y += p.vy;
+        p.vy -= 0.05; p.vx *= 0.97;
+        p.life -= p.decay;
+        if (p.life <= 0) { fireParticles.splice(i, 1); continue; }
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
+        grad.addColorStop(0, `rgba(255, 240, 180, ${p.life})`);
+        grad.addColorStop(0.4, `rgba(255, 140, 40, ${p.life * 0.8})`);
+        grad.addColorStop(1, `rgba(200, 20, 0, 0)`);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = grad;
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+    function spawnLightningFlash() {
+      lightningFlashes.push({ life: 1, decay: 0.06 });
+    }
+    function updateLightningFlashes(w, h) {
+      for (let i = lightningFlashes.length - 1; i >= 0; i--) {
+        const f = lightningFlashes[i];
+        f.life -= f.decay;
+        if (f.life <= 0) { lightningFlashes.splice(i, 1); continue; }
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.fillStyle = `rgba(220, 240, 255, ${f.life * 0.4})`;
+        ctx.fillRect(0, 0, w, h);
+        ctx.restore();
+      }
+    }
 
     /* ============================================================
-       CHIDORI — scaled to hand size, covers whole palm + fingers
+       CHIDORI
        ============================================================ */
-    function drawChidori(landmarks, w, h, now) {
-      const palm = landmarks[9];
-      const x = palm.x * w;
-      const y = palm.y * h;
+    function drawChidori(lm, w, h, now) {
+      const palm = lm[9];
+      const x = palm.x * w, y = palm.y * h;
       const t = now / 1000;
-
-      // Hand size → aura radius covers the whole hand
-      const handSize = estimateHandSize(landmarks, w, h);
+      const handSize = estimateHandSize(lm, w, h);
       const auraR = Math.max(handSize * 1.4, 90);
 
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
-
-      // Outer volumetric aura (5 layers)
       for (let layer = 0; layer < 5; layer++) {
         const r = auraR + layer * 22;
         const a = 0.42 - layer * 0.07;
@@ -893,32 +1286,24 @@
         g.addColorStop(0, `rgba(220, 250, 255, ${a})`);
         g.addColorStop(0.55, `rgba(80, 200, 255, ${a * 0.65})`);
         g.addColorStop(1, 'rgba(0, 100, 255, 0)');
-        ctx.beginPath();
-        ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fillStyle = g;
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fillStyle = g; ctx.fill();
       }
-
-      // Lightning bolts radiating outward
       ctx.lineCap = 'round';
-      const boltCount = 22;
-      const baseLen = auraR * 1.15;
-      for (let b = 0; b < boltCount; b++) {
-        const baseAngle = (b / boltCount) * Math.PI * 2 + t * 3;
-        const len = baseLen * (0.6 + Math.random() * 0.8);
-        const startX = x + (Math.random() - 0.5) * 20;
-        const startY = y + (Math.random() - 0.5) * 20;
-        const endX = startX + Math.cos(baseAngle + (Math.random() - 0.5) * 0.7) * len;
-        const endY = startY + Math.sin(baseAngle + (Math.random() - 0.5) * 0.7) * len;
-
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        const segs = 8;
-        for (let s = 1; s <= segs; s++) {
-          const tt = s / segs;
-          const jx = startX + (endX - startX) * tt + (Math.random() - 0.5) * 30;
-          const jy = startY + (endY - startY) * tt + (Math.random() - 0.5) * 30;
-          ctx.lineTo(jx, jy);
+      for (let b = 0; b < 22; b++) {
+        const baseAngle = (b / 22) * Math.PI * 2 + t * 3;
+        const len = auraR * 1.15 * (0.6 + Math.random() * 0.8);
+        const sx = x + (Math.random() - 0.5) * 20;
+        const sy = y + (Math.random() - 0.5) * 20;
+        const ex = sx + Math.cos(baseAngle + (Math.random() - 0.5) * 0.7) * len;
+        const ey = sy + Math.sin(baseAngle + (Math.random() - 0.5) * 0.7) * len;
+        ctx.beginPath(); ctx.moveTo(sx, sy);
+        for (let s = 1; s <= 8; s++) {
+          const tt = s / 8;
+          ctx.lineTo(
+            sx + (ex - sx) * tt + (Math.random() - 0.5) * 30,
+            sy + (ey - sy) * tt + (Math.random() - 0.5) * 30
+          );
         }
         ctx.strokeStyle = `rgba(220, 250, 255, ${0.7 + Math.random() * 0.3})`;
         ctx.lineWidth = 1.8 + Math.random() * 3.2;
@@ -926,39 +1311,28 @@
         ctx.shadowBlur = 25;
         ctx.stroke();
       }
-
-      // Bright core (covers palm)
-      ctx.shadowBlur = 90;
-      ctx.shadowColor = '#aaefff';
+      ctx.shadowBlur = 90; ctx.shadowColor = '#aaefff';
       const coreG = ctx.createRadialGradient(x, y, 0, x, y, handSize * 0.9);
       coreG.addColorStop(0, 'rgba(255, 255, 255, 1)');
       coreG.addColorStop(0.35, 'rgba(200, 245, 255, 0.85)');
       coreG.addColorStop(0.7, 'rgba(120, 220, 255, 0.4)');
       coreG.addColorStop(1, 'rgba(0, 180, 255, 0)');
-      ctx.beginPath();
-      ctx.arc(x, y, handSize * 0.9, 0, Math.PI * 2);
-      ctx.fillStyle = coreG;
-      ctx.fill();
-
+      ctx.beginPath(); ctx.arc(x, y, handSize * 0.9, 0, Math.PI * 2);
+      ctx.fillStyle = coreG; ctx.fill();
       ctx.restore();
     }
 
     /* ============================================================
-       RASENGAN — scaled to hand size (palm-sized sphere)
+       RASENGAN
        ============================================================ */
-    function drawRasengan(landmarks, w, h, now) {
-      const palm = landmarks[9];
-      const x = palm.x * w;
-      const y = palm.y * h;
+    function drawRasengan(lm, w, h, now) {
+      const palm = lm[9];
+      const x = palm.x * w, y = palm.y * h;
       const t = now / 1000;
-
-      const handSize = estimateHandSize(landmarks, w, h);
-      const R = Math.max(handSize * 0.75, 55);
+      const R = Math.max(estimateHandSize(lm, w, h) * 0.75, 55);
 
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
-
-      // Volumetric outer shell (5 layers)
       for (let i = 4; i >= 0; i--) {
         const r = R + i * 14;
         const a = 0.2 - i * 0.035;
@@ -966,79 +1340,125 @@
         g.addColorStop(0, `rgba(200, 235, 255, ${a})`);
         g.addColorStop(0.7, `rgba(60, 140, 255, ${a * 0.8})`);
         g.addColorStop(1, 'rgba(0, 60, 200, 0)');
-        ctx.beginPath();
-        ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fillStyle = g;
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fillStyle = g; ctx.fill();
       }
+      const sg = ctx.createRadialGradient(x - R * 0.35, y - R * 0.35, R * 0.1, x, y, R);
+      sg.addColorStop(0, '#ffffff');
+      sg.addColorStop(0.25, '#dcefff');
+      sg.addColorStop(0.55, '#2f8fff');
+      sg.addColorStop(0.85, '#0a4ed8');
+      sg.addColorStop(1, '#021a5c');
+      ctx.beginPath(); ctx.arc(x, y, R, 0, Math.PI * 2);
+      ctx.fillStyle = sg; ctx.fill();
 
-      // Sphere base
-      const sphereG = ctx.createRadialGradient(x - R * 0.35, y - R * 0.35, R * 0.1, x, y, R);
-      sphereG.addColorStop(0, '#ffffff');
-      sphereG.addColorStop(0.25, '#dcefff');
-      sphereG.addColorStop(0.55, '#2f8fff');
-      sphereG.addColorStop(0.85, '#0a4ed8');
-      sphereG.addColorStop(1, '#021a5c');
-      ctx.beginPath();
-      ctx.arc(x, y, R, 0, Math.PI * 2);
-      ctx.fillStyle = sphereG;
-      ctx.fill();
-
-      // Spiral particle arms (chakra swirl)
-      const arms = 5;
-      const particlesPerArm = 18;
-      for (let a = 0; a < arms; a++) {
-        for (let p = 0; p < particlesPerArm; p++) {
-          const angle = t * 5 + a * (Math.PI * 2 / arms) + p * 0.26;
-          const radius = R * (0.12 + p / particlesPerArm * 0.85);
+      for (let a = 0; a < 5; a++) {
+        for (let p = 0; p < 18; p++) {
+          const angle = t * 5 + a * (Math.PI * 2 / 5) + p * 0.26;
+          const radius = R * (0.12 + p / 18 * 0.85);
           const px = x + Math.cos(angle) * radius;
           const py = y + Math.sin(angle) * radius;
-          const pSize = (R * 0.09) * (1 - p / particlesPerArm * 0.7) + 1;
-          const alpha = 0.95 - p / particlesPerArm * 0.5;
-          ctx.beginPath();
-          ctx.arc(px, py, pSize, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(235, 252, 255, ${alpha})`;
+          const pSize = (R * 0.09) * (1 - p / 18 * 0.7) + 1;
+          ctx.beginPath(); ctx.arc(px, py, pSize, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(235, 252, 255, ${0.95 - p / 18 * 0.5})`;
           ctx.fill();
         }
       }
-
-      // Bright core
-      ctx.shadowColor = '#cfefff';
-      ctx.shadowBlur = 110;
+      ctx.shadowColor = '#cfefff'; ctx.shadowBlur = 110;
       const coreG = ctx.createRadialGradient(x, y, 0, x, y, R * 0.38);
       coreG.addColorStop(0, 'rgba(255, 255, 255, 1)');
       coreG.addColorStop(0.5, 'rgba(180, 230, 255, 0.85)');
       coreG.addColorStop(1, 'rgba(100, 180, 255, 0)');
-      ctx.beginPath();
-      ctx.arc(x, y, R * 0.38, 0, Math.PI * 2);
-      ctx.fillStyle = coreG;
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(x, y, R * 0.38, 0, Math.PI * 2);
+      ctx.fillStyle = coreG; ctx.fill();
+      ctx.restore();
+    }
 
-      // Outer rotating arcs
-      ctx.shadowBlur = 30;
-      ctx.lineWidth = 2.5;
-      for (let i = 0; i < 3; i++) {
-        const ringR = R * (1.15 + i * 0.15);
+    /* ============================================================
+       RASENSHURIKEN
+       ============================================================ */
+    function drawRasenshuriken(lm, w, h, now, lifeRatio) {
+      const palm = lm[9];
+      const x = palm.x * w, y = palm.y * h;
+      const t = now / 1000;
+      const R = Math.max(estimateHandSize(lm, w, h) * 0.9, 70);
+
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalAlpha = Math.min(1, lifeRatio * 2);
+
+      // Bigger glowed aura
+      for (let i = 5; i >= 0; i--) {
+        const r = R + i * 18;
+        const a = 0.22 - i * 0.035;
+        const g = ctx.createRadialGradient(x, y, R * 0.3, x, y, r);
+        g.addColorStop(0, `rgba(220, 245, 255, ${a})`);
+        g.addColorStop(0.6, `rgba(120, 200, 255, ${a * 0.8})`);
+        g.addColorStop(1, 'rgba(50, 120, 220, 0)');
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fillStyle = g; ctx.fill();
+      }
+
+      // Core sphere
+      const sg = ctx.createRadialGradient(x - R * 0.3, y - R * 0.3, R * 0.1, x, y, R);
+      sg.addColorStop(0, '#ffffff');
+      sg.addColorStop(0.4, '#cfeaff');
+      sg.addColorStop(0.75, '#3fa0ff');
+      sg.addColorStop(1, '#0a3ea8');
+      ctx.beginPath(); ctx.arc(x, y, R, 0, Math.PI * 2);
+      ctx.fillStyle = sg; ctx.fill();
+
+      // 4 wind blades (elongated rotating triangles)
+      const blades = 4;
+      for (let b = 0; b < blades; b++) {
+        const baseAngle = t * 8 + b * (Math.PI * 2 / blades);
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(baseAngle);
+        // blade shape
+        const bladeLen = R * 2.6;
+        const bladeWidth = R * 0.55;
+        const grad = ctx.createLinearGradient(0, 0, bladeLen, 0);
+        grad.addColorStop(0, 'rgba(220, 245, 255, 0.95)');
+        grad.addColorStop(0.4, 'rgba(140, 210, 255, 0.85)');
+        grad.addColorStop(1, 'rgba(100, 180, 255, 0)');
         ctx.beginPath();
-        ctx.arc(x, y, ringR, t * 2 + i * 1.2, t * 2 + i * 1.2 + Math.PI * 1.4);
-        ctx.strokeStyle = `rgba(190, 235, 255, ${0.55 - i * 0.12})`;
-        ctx.stroke();
+        ctx.moveTo(0, -bladeWidth / 2);
+        ctx.lineTo(bladeLen, 0);
+        ctx.lineTo(0, bladeWidth / 2);
+        ctx.closePath();
+        ctx.fillStyle = grad;
+        ctx.shadowColor = '#aaefff';
+        ctx.shadowBlur = 40;
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Inner spiral
+      for (let a = 0; a < 6; a++) {
+        for (let p = 0; p < 22; p++) {
+          const angle = t * 12 + a * (Math.PI * 2 / 6) + p * 0.22;
+          const radius = R * (0.1 + p / 22 * 0.9);
+          const px = x + Math.cos(angle) * radius;
+          const py = y + Math.sin(angle) * radius;
+          ctx.beginPath();
+          ctx.arc(px, py, R * 0.06 + 1, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${0.9 - p / 22 * 0.6})`;
+          ctx.fill();
+        }
       }
 
       ctx.restore();
     }
 
     /* ============================================================
-       SHARINGAN — scaled to actual eye size
+       SHARINGAN
        ============================================================ */
     function drawSharinganOnFace(landmarks, w, h) {
       const lx = (landmarks[33].x + landmarks[133].x) / 2;
       const ly = (landmarks[33].y + landmarks[133].y) / 2;
       const rx = (landmarks[362].x + landmarks[263].x) / 2;
       const ry = (landmarks[362].y + landmarks[263].y) / 2;
-
-      // Eye corner-to-corner width (true eye size, not inter-eye distance)
-      // Left eye: outer 33, inner 133. Right eye: inner 362, outer 263.
       const lEyeWidth = Math.hypot(
         (landmarks[33].x - landmarks[133].x) * w,
         (landmarks[33].y - landmarks[133].y) * h
@@ -1047,43 +1467,26 @@
         (landmarks[362].x - landmarks[263].x) * w,
         (landmarks[362].y - landmarks[263].y) * h
       );
-
-      // Radius scaled to fill the eye socket
-      const lRadius = Math.max(14, lEyeWidth * 0.55);
-      const rRadius = Math.max(14, rEyeWidth * 0.55);
-
-      drawSharinganAt(lx * w, ly * h, lRadius);
-      drawSharinganAt(rx * w, ry * h, rRadius);
+      drawSharinganAt(lx * w, ly * h, Math.max(14, lEyeWidth * 0.55));
+      drawSharinganAt(rx * w, ry * h, Math.max(14, rEyeWidth * 0.55));
     }
-
     function drawSharinganAt(cx, cy, radius) {
       const t = performance.now() / 1000;
-
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
-
-      // Outer glow
       const glow = ctx.createRadialGradient(cx, cy, radius * 0.6, cx, cy, radius * 2.4);
       glow.addColorStop(0, 'rgba(255, 30, 30, 0.55)');
       glow.addColorStop(0.5, 'rgba(180, 0, 0, 0.28)');
       glow.addColorStop(1, 'rgba(120, 0, 0, 0)');
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius * 2.4, 0, Math.PI * 2);
-      ctx.fillStyle = glow;
-      ctx.fill();
-
-      // Iris base
+      ctx.beginPath(); ctx.arc(cx, cy, radius * 2.4, 0, Math.PI * 2);
+      ctx.fillStyle = glow; ctx.fill();
       const irisG = ctx.createRadialGradient(cx, cy, radius * 0.15, cx, cy, radius);
       irisG.addColorStop(0, '#ff2020');
       irisG.addColorStop(0.5, '#c00000');
       irisG.addColorStop(0.85, '#7a0000');
       irisG.addColorStop(1, '#3a0000');
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-      ctx.fillStyle = irisG;
-      ctx.fill();
-
-      // Iris fibers
+      ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.fillStyle = irisG; ctx.fill();
       ctx.strokeStyle = 'rgba(255, 80, 80, 0.6)';
       ctx.lineWidth = Math.max(0.6, radius * 0.035);
       for (let i = 0; i < 32; i++) {
@@ -1093,56 +1496,36 @@
         ctx.lineTo(cx + Math.cos(a) * radius * 0.95, cy + Math.sin(a) * radius * 0.95);
         ctx.stroke();
       }
-
-      // Rotating tomoe
       for (let i = 0; i < 3; i++) {
-        const baseAngle = (i * Math.PI * 2 / 3) + t * 0.7;
-        const tx = cx + Math.cos(baseAngle) * radius * 0.6;
-        const ty = cy + Math.sin(baseAngle) * radius * 0.6;
-
+        const ba = (i * Math.PI * 2 / 3) + t * 0.7;
+        const tx = cx + Math.cos(ba) * radius * 0.6;
+        const ty = cy + Math.sin(ba) * radius * 0.6;
         ctx.save();
         ctx.translate(tx, ty);
-        ctx.rotate(baseAngle + Math.PI / 2);
-
+        ctx.rotate(ba + Math.PI / 2);
         ctx.beginPath();
         const r = radius * 0.26;
         ctx.arc(0, 0, r, 0, Math.PI * 1.4);
         ctx.arc(r * 0.4, r * 0.4, r * 0.55, Math.PI * 1.4, Math.PI * 2.4);
         ctx.closePath();
-        ctx.fillStyle = '#000';
-        ctx.fill();
-
+        ctx.fillStyle = '#000'; ctx.fill();
         ctx.beginPath();
         ctx.arc(-r * 0.25, -r * 0.25, r * 0.28, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-        ctx.fill();
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'; ctx.fill();
         ctx.restore();
       }
-
-      // Pupil (dilating)
       const pupilR = radius * (0.26 + Math.sin(t * 3) * 0.02);
-      ctx.beginPath();
-      ctx.arc(cx, cy, pupilR, 0, Math.PI * 2);
-      ctx.fillStyle = '#000';
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.arc(cx, cy, pupilR * 0.5, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(120, 0, 0, 0.9)';
-      ctx.fill();
-
-      // Outer ring
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.beginPath(); ctx.arc(cx, cy, pupilR, 0, Math.PI * 2);
+      ctx.fillStyle = '#000'; ctx.fill();
+      ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI * 2);
       ctx.strokeStyle = 'rgba(255, 60, 60, 0.75)';
       ctx.lineWidth = Math.max(1.2, radius * 0.07);
       ctx.stroke();
-
       ctx.restore();
     }
 
     /* ============================================================
-       WATER DRAGON — full dragon silhouette
+       WATER DRAGON — full silhouette
        ============================================================ */
     function drawWaterDragon(progress, w, h, now) {
       const t = now / 1000;
@@ -1151,21 +1534,17 @@
       else if (progress > 0.88) alpha = (1 - progress) / 0.12;
       alpha = Math.min(1, Math.max(0, alpha));
 
-      // Dragon traverses horizontally with a slight arc
-      const travel = progress;
-      const baseX = w * (0.15 + travel * 0.7);
-      const baseY = h * (0.55 - Math.sin(travel * Math.PI) * 0.15);
+      const baseX = w * (0.15 + progress * 0.7);
+      const baseY = h * (0.55 - Math.sin(progress * Math.PI) * 0.15);
       const scale = w / 1280;
 
-      // Spawn splashes along the wake
       if (Math.random() < 0.6) {
         splashParticles.push({
           x: baseX + (Math.random() - 0.5) * 200 * scale,
           y: baseY + (Math.random() - 0.3) * 100 * scale,
           vx: (Math.random() - 0.5) * 5,
           vy: -Math.random() * 5 - 2,
-          life: 1,
-          decay: 0.02 + Math.random() * 0.015,
+          life: 1, decay: 0.02 + Math.random() * 0.015,
           size: 2 + Math.random() * 5
         });
       }
@@ -1176,7 +1555,6 @@
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
-      /* ---------- Serpentine body ---------- */
       const bodyPoints = 32;
       const pts = [];
       for (let i = 0; i < bodyPoints; i++) {
@@ -1184,22 +1562,20 @@
         const angle = t * 1.2 + p * 6;
         const arcX = Math.cos(angle) * (30 + p * 60) * scale;
         const arcY = Math.sin(angle * 1.4) * (25 + p * 40) * scale;
-        const x = baseX - p * 480 * scale + arcX;
-        const y = baseY + arcY - Math.sin(p * Math.PI) * 40 * scale;
-        pts.push({ x, y, r: (22 - p * 14) * scale });
+        pts.push({
+          x: baseX - p * 480 * scale + arcX,
+          y: baseY + arcY - Math.sin(p * Math.PI) * 40 * scale,
+          r: (22 - p * 14) * scale
+        });
       }
 
-      // Outer glow underlay
-      ctx.shadowColor = '#00b0ff';
-      ctx.shadowBlur = 60 * scale;
+      ctx.shadowColor = '#00b0ff'; ctx.shadowBlur = 60 * scale;
       ctx.strokeStyle = `rgba(50, 140, 240, ${0.5 * alpha})`;
       ctx.lineWidth = 32 * scale;
-      ctx.beginPath();
-      ctx.moveTo(pts[0].x, pts[0].y);
+      ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
       for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
       ctx.stroke();
 
-      // Body — 3-layer gradient
       for (let pass = 0; pass < 3; pass++) {
         const grad = ctx.createLinearGradient(baseX - 500 * scale, baseY, baseX, baseY - 200 * scale);
         grad.addColorStop(0, `rgba(10, 60, 150, ${0.85 * alpha})`);
@@ -1208,69 +1584,49 @@
         grad.addColorStop(1, `rgba(40, 110, 200, ${0.9 * alpha})`);
         ctx.strokeStyle = grad;
         ctx.lineWidth = (22 - pass * 6) * scale;
-        ctx.beginPath();
-        ctx.moveTo(pts[0].x, pts[0].y);
+        ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
         for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
         ctx.stroke();
       }
 
-      // Scales
       for (let i = 0; i < pts.length; i++) {
         const p = pts[i];
         for (let k = 0; k < 5; k++) {
           const a = (k / 5) * Math.PI * 2 + t * 3 + i * 0.5;
           const r = p.r * (1 + Math.sin(a * 2 + t * 4) * 0.15);
-          const px = p.x + Math.cos(a) * r;
-          const py = p.y + Math.sin(a) * r;
           ctx.beginPath();
-          ctx.arc(px, py, 1.8 * scale, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(220, 245, 255, ${0.6 * alpha})`;
-          ctx.fill();
+          ctx.arc(p.x + Math.cos(a) * r, p.y + Math.sin(a) * r, 1.8 * scale, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(220, 245, 255, ${0.6 * alpha})`; ctx.fill();
         }
       }
 
-      /* ---------- Dorsal spikes along the body ---------- */
       ctx.fillStyle = `rgba(180, 230, 255, ${0.8 * alpha})`;
       for (let i = 2; i < pts.length - 2; i += 3) {
-        const p = pts[i];
-        const prev = pts[i - 1];
-        const dx = p.x - prev.x;
-        const dy = p.y - prev.y;
+        const p = pts[i], prev = pts[i - 1];
+        const dx = p.x - prev.x, dy = p.y - prev.y;
         const len = Math.hypot(dx, dy) || 1;
-        const nx = -dy / len;
-        const ny = dx / len;
-        const spikeLen = p.r * 1.2;
+        const nx = -dy / len, ny = dx / len;
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
-        ctx.lineTo(p.x + nx * spikeLen, p.y + ny * spikeLen);
+        ctx.lineTo(p.x + nx * p.r * 1.2, p.y + ny * p.r * 1.2);
         ctx.lineTo(prev.x, prev.y);
-        ctx.closePath();
-        ctx.fill();
+        ctx.closePath(); ctx.fill();
       }
 
-      /* ---------- Four clawed limbs ---------- */
-      const legIndices = [8, 14, 20, 26];
-      legIndices.forEach((idx, li) => {
+      [8, 14, 20, 26].forEach((idx, li) => {
         if (idx >= pts.length) return;
         const p = pts[idx];
         const swing = Math.sin(t * 3 + li * 1.3) * 30 * scale;
         const legLen = 70 * scale;
         const dirY = li % 2 === 0 ? 1 : -1;
-
-        const kneeX = p.x + swing * 0.5;
-        const kneeY = p.y + dirY * legLen * 0.5;
-        const footX = p.x + swing;
-        const footY = p.y + dirY * legLen;
-
-        // Upper leg
+        const kneeX = p.x + swing * 0.5, kneeY = p.y + dirY * legLen * 0.5;
+        const footX = p.x + swing, footY = p.y + dirY * legLen;
         ctx.strokeStyle = `rgba(120, 200, 255, ${0.85 * alpha})`;
         ctx.lineWidth = 10 * scale;
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
         ctx.quadraticCurveTo(kneeX, kneeY, footX, footY);
         ctx.stroke();
-
-        // Claws (3 talons)
         ctx.strokeStyle = `rgba(240, 250, 255, ${0.95 * alpha})`;
         ctx.lineWidth = 3 * scale;
         for (let c = -1; c <= 1; c++) {
@@ -1281,7 +1637,6 @@
         }
       });
 
-      /* ---------- Head ---------- */
       const head = pts[pts.length - 1];
       const neck = pts[pts.length - 3];
       const angle = Math.atan2(head.y - neck.y, head.x - neck.x);
@@ -1291,16 +1646,12 @@
       ctx.translate(head.x, head.y);
       ctx.rotate(angle);
 
-      // Head aura
       const auraG = ctx.createRadialGradient(0, 0, headR * 0.4, 0, 0, headR * 2.2);
       auraG.addColorStop(0, `rgba(200, 240, 255, ${0.7 * alpha})`);
       auraG.addColorStop(1, 'rgba(20, 80, 180, 0)');
-      ctx.beginPath();
-      ctx.arc(0, 0, headR * 2.2, 0, Math.PI * 2);
-      ctx.fillStyle = auraG;
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(0, 0, headR * 2.2, 0, Math.PI * 2);
+      ctx.fillStyle = auraG; ctx.fill();
 
-      // Elongated snout — proper dragon head shape
       ctx.beginPath();
       ctx.moveTo(-headR * 0.4, -headR * 0.9);
       ctx.quadraticCurveTo(headR * 0.3, -headR * 1.1, headR * 1.6, -headR * 0.3);
@@ -1308,42 +1659,30 @@
       ctx.quadraticCurveTo(headR * 0.3, headR * 1.1, -headR * 0.4, headR * 0.9);
       ctx.quadraticCurveTo(-headR * 0.9, 0, -headR * 0.4, -headR * 0.9);
       ctx.closePath();
-
       const headG = ctx.createRadialGradient(-headR * 0.3, -headR * 0.3, headR * 0.1, 0, 0, headR * 1.8);
       headG.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
       headG.addColorStop(0.4, `rgba(150, 220, 255, ${0.95 * alpha})`);
       headG.addColorStop(1, `rgba(20, 80, 180, ${0.9 * alpha})`);
-      ctx.fillStyle = headG;
-      ctx.fill();
-
+      ctx.fillStyle = headG; ctx.fill();
       ctx.strokeStyle = `rgba(220, 245, 255, ${0.95 * alpha})`;
-      ctx.lineWidth = 3 * scale;
-      ctx.stroke();
+      ctx.lineWidth = 3 * scale; ctx.stroke();
 
-      // Jaw line
       ctx.beginPath();
       ctx.moveTo(headR * 0.2, headR * 0.35);
       ctx.quadraticCurveTo(headR * 1.0, headR * 0.55, headR * 1.55, headR * 0.25);
       ctx.strokeStyle = `rgba(30, 90, 180, ${0.9 * alpha})`;
-      ctx.lineWidth = 2 * scale;
-      ctx.stroke();
+      ctx.lineWidth = 2 * scale; ctx.stroke();
 
-      // Teeth
       ctx.fillStyle = `rgba(255, 255, 245, ${alpha})`;
       for (let i = 0; i < 5; i++) {
-        const tx = headR * (0.55 + i * 0.22);
-        const ty = headR * (0.4 - i * 0.02);
+        const tx = headR * (0.55 + i * 0.22), ty = headR * (0.4 - i * 0.02);
         ctx.beginPath();
-        ctx.moveTo(tx, ty);
-        ctx.lineTo(tx + 5 * scale, ty + 6 * scale);
+        ctx.moveTo(tx, ty); ctx.lineTo(tx + 5 * scale, ty + 6 * scale);
         ctx.lineTo(tx + 10 * scale, ty + 1 * scale);
-        ctx.closePath();
-        ctx.fill();
+        ctx.closePath(); ctx.fill();
       }
 
-      // Eye — glowing slit
-      ctx.shadowColor = '#ffff99';
-      ctx.shadowBlur = 30 * scale;
+      ctx.shadowColor = '#ffff99'; ctx.shadowBlur = 30 * scale;
       ctx.fillStyle = `rgba(255, 250, 180, ${alpha})`;
       ctx.beginPath();
       ctx.ellipse(headR * 0.55, -headR * 0.25, headR * 0.22, headR * 0.14, -0.2, 0, Math.PI * 2);
@@ -1354,19 +1693,8 @@
       ctx.ellipse(headR * 0.55, -headR * 0.25, headR * 0.06, headR * 0.13, -0.2, 0, Math.PI * 2);
       ctx.fill();
 
-      // Nostrils
-      ctx.fillStyle = `rgba(20, 60, 120, ${alpha})`;
-      ctx.beginPath();
-      ctx.arc(headR * 1.4, -headR * 0.1, headR * 0.06, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(headR * 1.4, headR * 0.1, headR * 0.06, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Horns (2 swept back)
       ctx.strokeStyle = `rgba(240, 250, 255, ${0.95 * alpha})`;
-      ctx.lineWidth = 5 * scale;
-      ctx.lineCap = 'round';
+      ctx.lineWidth = 5 * scale; ctx.lineCap = 'round';
       ctx.beginPath();
       ctx.moveTo(-headR * 0.2, -headR * 0.85);
       ctx.quadraticCurveTo(-headR * 1.0, -headR * 1.4, -headR * 1.8, -headR * 1.0);
@@ -1376,7 +1704,6 @@
       ctx.quadraticCurveTo(-headR * 0.6, -headR * 1.6, -headR * 1.4, -headR * 1.4);
       ctx.stroke();
 
-      // Whiskers (long flowing)
       ctx.strokeStyle = `rgba(180, 230, 255, ${0.85 * alpha})`;
       ctx.lineWidth = 2.5 * scale;
       for (let i = -1; i <= 1; i++) {
@@ -1384,42 +1711,236 @@
         ctx.beginPath();
         ctx.moveTo(headR * 1.5, i * headR * 0.2);
         const wave = Math.sin(t * 5 + i) * 25 * scale;
-        ctx.quadraticCurveTo(
-          headR * 2.6, i * headR * 0.6 + wave,
-          headR * 3.8, i * headR * 1.0 + wave * 1.5
-        );
+        ctx.quadraticCurveTo(headR * 2.6, i * headR * 0.6 + wave, headR * 3.8, i * headR * 1.0 + wave * 1.5);
+        ctx.stroke();
+      }
+      ctx.restore();
+      ctx.restore();
+    }
+
+    /* ============================================================
+       FIREBALL
+       ============================================================ */
+    function drawFireball(mouth, w, h, now, lifeRatio) {
+      const cx = mouth.x * w, cy = mouth.y * h;
+      const t = now / 1000;
+      const baseR = 60 + (1 - lifeRatio) * 120;
+      const alpha = Math.min(1, lifeRatio * 3) * (lifeRatio > 0.9 ? (1 - lifeRatio) * 10 : 1);
+      const a = Math.min(1, alpha);
+
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+
+      // Outer smoke/flame aura
+      for (let i = 4; i >= 0; i--) {
+        const r = baseR + i * 30 + Math.sin(t * 4 + i) * 8;
+        const ga = 0.22 - i * 0.035;
+        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+        g.addColorStop(0, `rgba(255, 240, 180, ${ga * a})`);
+        g.addColorStop(0.4, `rgba(255, 140, 50, ${ga * a})`);
+        g.addColorStop(0.75, `rgba(220, 60, 20, ${ga * 0.7 * a})`);
+        g.addColorStop(1, 'rgba(120, 20, 0, 0)');
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fillStyle = g; ctx.fill();
+      }
+
+      // Core flame
+      const coreG = ctx.createRadialGradient(cx, cy, 0, cx, cy, baseR * 0.7);
+      coreG.addColorStop(0, `rgba(255, 255, 240, ${a})`);
+      coreG.addColorStop(0.4, `rgba(255, 200, 100, ${0.95 * a})`);
+      coreG.addColorStop(0.8, `rgba(255, 90, 30, ${0.85 * a})`);
+      coreG.addColorStop(1, 'rgba(180, 30, 0, 0)');
+      ctx.beginPath(); ctx.arc(cx, cy, baseR * 0.7, 0, Math.PI * 2);
+      ctx.fillStyle = coreG; ctx.fill();
+
+      // Flying embers
+      for (let i = 0; i < 8; i++) {
+        const a2 = t * 2 + i * 0.8;
+        const r = baseR * (0.8 + (i % 3) * 0.3);
+        const ex = cx + Math.cos(a2) * r;
+        const ey = cy + Math.sin(a2) * r;
+        ctx.beginPath();
+        ctx.arc(ex, ey, 3 + Math.random() * 3, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 220, 120, ${a * 0.7})`;
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    /* ============================================================
+       KIRIN
+       ============================================================ */
+    function drawKirin(progress, w, h, now) {
+      const t = now / 1000;
+      let alpha;
+      if (progress < 0.15) alpha = progress / 0.15;
+      else if (progress > 0.75) alpha = (1 - progress) / 0.25;
+      else alpha = 1;
+      alpha = Math.min(1, Math.max(0, alpha));
+
+      // Flash
+      updateLightningFlashes(w, h);
+
+      // Screen shake
+      const shake = progress < 0.4 ? (0.4 - progress) * 40 : 0;
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.lineCap = 'round';
+
+      // Target point — center of screen (where hands are)
+      const targetX = w * 0.5 + (Math.random() - 0.5) * shake;
+      const targetY = h * 0.75;
+
+      // Giant beast bolt — a massive jagged line from top to target
+      ctx.shadowColor = '#aaddff';
+      ctx.shadowBlur = 60;
+
+      // Outer glow bolt
+      for (let pass = 0; pass < 3; pass++) {
+        ctx.beginPath();
+        ctx.moveTo(targetX + (Math.random() - 0.5) * 100, -100);
+        const segments = 24;
+        for (let s = 1; s <= segments; s++) {
+          const tt = s / segments;
+          const xx = targetX + (Math.random() - 0.5) * 120 * (1 - tt);
+          const yy = -100 + (targetY + 100) * tt;
+          ctx.lineTo(xx, yy);
+        }
+        ctx.strokeStyle = pass === 0 ? `rgba(200, 235, 255, ${0.4 * alpha})` : 'rgba(255, 255, 255, ' + alpha + ')';
+        ctx.lineWidth = pass === 0 ? 30 : (pass === 1 ? 14 : 6);
         ctx.stroke();
       }
 
-      // Mane (flowing back)
-      ctx.fillStyle = `rgba(140, 210, 255, ${0.75 * alpha})`;
+      // Branch bolts
+      for (let b = 0; b < 8; b++) {
+        const startT = 0.2 + Math.random() * 0.6;
+        const sx = targetX + (Math.random() - 0.5) * 100;
+        const sy = -100 + (targetY + 100) * startT;
+        const bx = sx + (Math.random() - 0.5) * 400;
+        const by = sy + (Math.random() - 0.5) * 200;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        for (let s = 1; s <= 8; s++) {
+          const tt = s / 8;
+          ctx.lineTo(
+            sx + (bx - sx) * tt + (Math.random() - 0.5) * 60,
+            sy + (by - sy) * tt + (Math.random() - 0.5) * 60
+          );
+        }
+        ctx.strokeStyle = `rgba(220, 240, 255, ${0.7 * alpha})`;
+        ctx.lineWidth = 2 + Math.random() * 3;
+        ctx.stroke();
+      }
+
+      // Ground impact burst
+      if (progress > 0.3) {
+        const burst = Math.min(1, (progress - 0.3) * 3);
+        for (let i = 0; i < 30; i++) {
+          const a = (i / 30) * Math.PI * 2;
+          const r = burst * 200 * (0.5 + Math.random() * 0.5);
+          ctx.beginPath();
+          ctx.arc(targetX + Math.cos(a) * r, targetY + Math.sin(a) * r * 0.4, 3 + Math.random() * 4, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(230, 245, 255, ${(1 - burst) * alpha})`;
+          ctx.fill();
+        }
+      }
+
+      ctx.restore();
+    }
+
+    /* ============================================================
+       MIST
+       ============================================================ */
+    function drawMist(progress, w, h, now) {
+      const t = now / 1000;
+      let alpha;
+      if (progress < 0.2) alpha = progress / 0.2;
+      else if (progress > 0.75) alpha = (1 - progress) / 0.25;
+      else alpha = 1;
+      alpha = Math.min(1, Math.max(0, alpha)) * 0.55;
+
+      ctx.save();
+      ctx.globalCompositeOperation = 'source-over';
+      // Base fog
+      const g = ctx.createLinearGradient(0, 0, 0, h);
+      g.addColorStop(0, `rgba(200, 220, 240, ${alpha})`);
+      g.addColorStop(0.5, `rgba(180, 210, 235, ${alpha * 0.9})`);
+      g.addColorStop(1, `rgba(160, 200, 230, ${alpha})`);
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, w, h);
+
+      // Moving fog banks
       for (let i = 0; i < 6; i++) {
-        const mx = -headR * (0.5 + i * 0.4);
-        const my = (i % 2 === 0 ? -1 : 1) * headR * (0.5 + i * 0.15);
-        const wave = Math.sin(t * 4 + i) * 8 * scale;
+        const y = (i / 6) * h + Math.sin(t + i) * 30;
+        const gx = Math.sin(t * 0.3 + i) * w * 0.3;
+        const rg = ctx.createRadialGradient(w / 2 + gx, y, 0, w / 2 + gx, y, w * 0.6);
+        rg.addColorStop(0, `rgba(230, 240, 250, ${alpha * 0.5})`);
+        rg.addColorStop(1, 'rgba(200, 220, 240, 0)');
         ctx.beginPath();
-        ctx.moveTo(-headR * 0.3, 0);
-        ctx.quadraticCurveTo(mx, my + wave, mx - 20 * scale, my * 1.3 + wave);
-        ctx.quadraticCurveTo(mx + 5 * scale, my * 0.7, -headR * 0.3, headR * 0.15 * (i % 2 === 0 ? -1 : 1));
-        ctx.closePath();
+        ctx.arc(w / 2 + gx, y, w * 0.6, 0, Math.PI * 2);
+        ctx.fillStyle = rg;
         ctx.fill();
       }
-
       ctx.restore();
+    }
 
-      // Ambient water surge particles around dragon
-      for (let i = 0; i < 30; i++) {
-        const a = t * 3 + i * 0.7;
-        const r = (60 + (i * 23) % 200) * scale;
-        const sx = baseX + Math.cos(a) * r;
-        const sy = baseY + Math.sin(a * 1.4) * r * 0.5;
+    /* ============================================================
+       AMATERASU
+       ============================================================ */
+    function updateAmaterasu(w, h) {
+      for (let i = amaterasuFlames.length - 1; i >= 0; i--) {
+        const f = amaterasuFlames[i];
+        f.x += f.vx; f.y += f.vy;
+        f.vy -= 0.00005; // slight rise
+        f.life -= f.decay;
+        if (f.life <= 0) { amaterasuFlames.splice(i, 1); continue; }
+
+        const cx = f.x * w, cy = f.y * h;
+        const size = f.size * w * (1 + (1 - f.life) * 0.5);
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'source-over';
+        // Black core with orange-red rim
+        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, size);
+        g.addColorStop(0, `rgba(0, 0, 0, ${f.life})`);
+        g.addColorStop(0.5, `rgba(20, 0, 0, ${f.life * 0.9})`);
+        g.addColorStop(0.85, `rgba(180, 40, 0, ${f.life * 0.7})`);
+        g.addColorStop(1, `rgba(255, 100, 30, 0)`);
         ctx.beginPath();
-        ctx.arc(sx, sy, (1.5 + Math.random() * 2.5) * scale, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(180, 230, 255, ${0.55 * alpha})`;
+        ctx.arc(cx, cy, size, 0, Math.PI * 2);
+        ctx.fillStyle = g;
         ctx.fill();
+
+        // Red-purple rim glow
+        ctx.globalCompositeOperation = 'lighter';
+        const rg = ctx.createRadialGradient(cx, cy, size * 0.7, cx, cy, size * 1.6);
+        rg.addColorStop(0, `rgba(255, 40, 20, ${f.life * 0.5})`);
+        rg.addColorStop(1, 'rgba(120, 0, 60, 0)');
+        ctx.beginPath();
+        ctx.arc(cx, cy, size * 1.6, 0, Math.PI * 2);
+        ctx.fillStyle = rg;
+        ctx.fill();
+        ctx.restore();
       }
 
-      ctx.restore();
+      // Spawn new flames while active
+      if (amaterasuActive && faceLandmarks) {
+        const fh = faceLandmarks[10];
+        for (let i = 0; i < 3; i++) {
+          amaterasuFlames.push({
+            x: fh.x + (Math.random() - 0.5) * 0.05,
+            y: fh.y + (Math.random() - 0.5) * 0.03,
+            vx: (Math.random() - 0.5) * 0.005,
+            vy: -Math.random() * 0.004 - 0.001,
+            life: 1,
+            decay: 0.008 + Math.random() * 0.008,
+            size: 0.015 + Math.random() * 0.025
+          });
+        }
+      }
     }
 
     /* ============================================================
@@ -1428,9 +1949,8 @@
     window.addEventListener('beforeunload', () => {
       if (animationFrame) cancelAnimationFrame(animationFrame);
       if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
-      Audio.chidoriStop();
-      Audio.rasenganStop();
-      Audio.sharinganStop();
+      Audio.chidoriStop(); Audio.rasenganStop(); Audio.sharinganStop();
+      Audio.fireballStop(); Audio.mistStop();
     });
   </script>
 </body>
