@@ -56,8 +56,6 @@
       transform: scaleX(-1);
       mix-blend-mode: screen;
     }
-
-    /* Kanji flash overlay */
     .kanji-flash {
       position: absolute;
       top: 50%; left: 50%;
@@ -77,8 +75,6 @@
       opacity: 1;
       transform: translate(-50%, -50%) scale(1);
     }
-
-    /* HUD */
     .hud {
       position: absolute;
       top: 12px;
@@ -97,7 +93,6 @@
       pointer-events: none;
     }
     .hud .hud-val { color: #00ff9d; font-weight: 700; }
-
     .hud-controls {
       position: absolute;
       top: 12px;
@@ -122,7 +117,6 @@
     }
     .hud-btn:hover { border-color: #00e6ff; color: #00e6ff; box-shadow: 0 0 15px rgba(0, 230, 255, 0.4); }
     .hud-btn:active { transform: scale(0.95); }
-
     .onboarding {
       position: absolute;
       inset: 0;
@@ -219,7 +213,6 @@
     }
     .jutsu-grid::-webkit-scrollbar { width: 4px; }
     .jutsu-grid::-webkit-scrollbar-thumb { background: #1e3b4a; border-radius: 2px; }
-
     .jutsu-item {
       background: #0b151e;
       border-left: 3px solid #2a4d5e;
@@ -292,13 +285,12 @@
       margin-top: 4px;
       font-style: italic;
     }
-
     .control-row {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
     }
-    .audio-toggle, .color-toggle, .reset-toggle {
+    .audio-toggle, .reset-toggle {
       background: #0e1c26;
       border: 1px solid #2a4d5e;
       color: #aad4ff;
@@ -313,7 +305,7 @@
       flex: 1;
       min-width: 0;
     }
-    .audio-toggle:hover, .color-toggle:hover, .reset-toggle:hover {
+    .audio-toggle:hover, .reset-toggle:hover {
       border-color: #00e6ff; color: #00e6ff;
     }
     .audio-toggle.on {
@@ -341,7 +333,8 @@
       <div class="hud" id="hud">
         FPS <span class="hud-val" id="hudFps">60</span> ·
         HANDS <span class="hud-val" id="hudHands">0</span> ·
-        FACE <span class="hud-val" id="hudFace">OFF</span>
+        FACE <span class="hud-val" id="hudFace">OFF</span> ·
+        MOUTH <span class="hud-val" id="hudMouth">0</span>
       </div>
 
       <div class="hud-controls">
@@ -368,13 +361,13 @@
           <span class="color-swatch" id="swatchChidori" style="color:#00e6ff;background:#00e6ff;"></span>
           <div class="jutsu-name"><span>⚡ CHIDORI</span></div>
           <div class="jutsu-status"><span class="status-dot"></span><span id="txChidori">RAISE LEFT HAND</span></div>
-          <div class="easy-hint">Click card to cycle colors</div>
+          <div class="easy-hint">Click to change color</div>
         </div>
         <div class="jutsu-item" id="stRasengan">
           <span class="color-swatch" id="swatchRasengan" style="color:#2f8fff;background:#2f8fff;"></span>
           <div class="jutsu-name"><span>🌀 RASENGAN</span></div>
           <div class="jutsu-status"><span class="status-dot"></span><span id="txRasengan">RAISE RIGHT HAND</span></div>
-          <div class="easy-hint">Click card to cycle colors</div>
+          <div class="easy-hint">Click to change color</div>
         </div>
         <div class="jutsu-item" id="stWaterDragon">
           <span class="color-swatch" id="swatchWaterDragon" style="color:#4aa8ff;background:#4aa8ff;"></span>
@@ -384,7 +377,7 @@
         <div class="jutsu-item" id="stFireball">
           <span class="color-swatch" id="swatchFireball" style="color:#ff7722;background:#ff7722;"></span>
           <div class="jutsu-name"><span>🔥 FIREBALL</span></div>
-          <div class="jutsu-status"><span class="status-dot"></span><span id="txFireball">HAND NEAR MOUTH</span></div>
+          <div class="jutsu-status"><span class="status-dot"></span><span id="txFireball">OPEN MOUTH</span></div>
         </div>
         <div class="jutsu-item" id="stRasenshuriken">
           <span class="color-swatch" id="swatchRasenshuriken" style="color:#7ec8ff;background:#7ec8ff;"></span>
@@ -394,7 +387,7 @@
         <div class="jutsu-item" id="stKirin">
           <span class="color-swatch" id="swatchKirin" style="color:#88ddff;background:#88ddff;"></span>
           <div class="jutsu-name"><span>⚡ KIRIN</span></div>
-          <div class="jutsu-status"><span class="status-dot"></span><span id="txKirin">BOTH HANDS UP HIGH</span></div>
+          <div class="jutsu-status"><span class="status-dot"></span><span id="txKirin">ARMS APART → CLAP</span></div>
         </div>
       </div>
 
@@ -484,6 +477,7 @@
     const hudFps = document.getElementById('hudFps');
     const hudHands = document.getElementById('hudHands');
     const hudFace = document.getElementById('hudFace');
+    const hudMouth = document.getElementById('hudMouth');
 
     const statusEls = {
       chidori:      { item: document.getElementById('stChidori'),       text: document.getElementById('txChidori') },
@@ -548,7 +542,6 @@
       ]
     };
 
-    // Current theme index per jutsu
     const themeIndex = {
       chidori: 0, rasengan: 0, sharingan: 0, waterDragon: 0, fireball: 0,
       rasenshuriken: 0, kirin: 0, mist: 0, amaterasu: 0
@@ -566,7 +559,6 @@
       el.style.background = t.glow;
     }
 
-    // Click handlers on jutsu cards to cycle color
     const swatchMap = {
       chidori: 'swatchChidori',
       rasengan: 'swatchRasengan',
@@ -587,7 +579,6 @@
       });
     });
 
-    // Global theme cycle
     themeBtn.onclick = () => {
       Object.keys(themeIndex).forEach(key => {
         themeIndex[key] = (themeIndex[key] + 1) % THEMES[key].length;
@@ -922,11 +913,22 @@
     let rasenshurikenActive = false, rasenshurikenTimer = 0;
     const RASENSHURIKEN_DURATION = 100;
 
+    // FIREBALL — now mouth-only trigger
     let fireballActive = false, fireballTimer = 0;
     const FIREBALL_DURATION = 120;
+    let mouthOpenFrames = 0;
+    const MOUTH_OPEN_THRESHOLD = 0.45;   // jawOpen score
+    const MOUTH_OPEN_FRAMES = 3;         // must hold for ~0.1s to avoid stray triggers
 
+    // KIRIN — reverted to arms-apart → clap sequence
     let kirinActive = false, kirinTimer = 0;
     const KIRIN_DURATION = 130;
+    let kirinProgress = 0;
+    let handsApartFrames = 0;
+    const APART_FRAMES_THRESHOLD = 10;
+    const APART_DISTANCE_THRESHOLD = 0.35;
+    let kirinCharged = false;
+    let kirinChargeGlow = 0;
 
     let mistActive = false, mistTimer = 0;
     const MIST_DURATION = 300;
@@ -937,8 +939,6 @@
     let amaterasuProgress = 0;
     const amaterasuFlames = [];
 
-    let kirinProgress = 0;
-
     let handLandmarker = null, faceLandmarker = null;
     let animationFrame = null, lastVideoTime = -1;
     let lastFrameTs = performance.now();
@@ -948,6 +948,7 @@
     const splashParticles = [];
     const fireParticles = [];
     const lightningFlashes = [];
+    const chargeParticles = [];
 
     /* ============================================================
        CANVAS SIZING
@@ -1097,9 +1098,10 @@
 
       const jawOpen = faceBlendshapes ?
         (faceBlendshapes.find(b => b.categoryName === 'jawOpen')?.score || 0) : 0;
+      hudMouth.textContent = jawOpen.toFixed(2);
 
       /* ============================================================
-         SIMPLIFIED TRIGGERS — one action per jutsu
+         TRIGGERS
          ============================================================ */
 
       // HAND DISTANCE
@@ -1111,10 +1113,11 @@
         );
       }
 
-      // WATER DRAGON: hands together (~0.2s hold)
+      // WATER DRAGON: hands together
       if (handDist < CLOSE_DISTANCE_THRESHOLD) handsCloseFrames++;
       else {
-        if (handsCloseFrames >= CLOSE_FRAMES_THRESHOLD && !waterDragonActive) {
+        if (handsCloseFrames >= CLOSE_FRAMES_THRESHOLD && !waterDragonActive &&
+            !kirinCharged && !kirinActive) {
           waterDragonActive = true;
           waterDragonTimer = WATER_DRAGON_DURATION;
           Audio.waterDragonRoar();
@@ -1124,61 +1127,89 @@
         handsCloseFrames = 0;
       }
 
-      // RASENSHURIKEN: BOTH hands close AND both above chest (y < 0.6) — simpler: hands together with right hand higher
+      // RASENSHURIKEN: right hand over left hand, close
       if (leftHandLandmarks && rightHandLandmarks &&
           handDist < 0.25 &&
           rightHandLandmarks[0].y < leftHandLandmarks[0].y &&
-          !rasenshurikenActive && !waterDragonActive) {
+          !rasenshurikenActive && !waterDragonActive && !kirinCharged) {
         rasenshurikenActive = true;
         rasenshurikenTimer = RASENSHURIKEN_DURATION;
         Audio.rasenshurikenCast();
         flashKanji('螺旋手裏剣', getTheme('rasenshuriken').glow);
       }
 
-      // FIREBALL: hand near mouth (mouth open not required anymore for ease)
-      let fireballTrigger = false;
-      if (faceLandmarks) {
-        const mouth = faceLandmarks[13];
-        const checkHand = (lm) => {
-          if (!lm) return false;
-          return Math.hypot(lm[9].x - mouth.x, lm[9].y - mouth.y) < 0.20;
-        };
-        if (checkHand(leftHandLandmarks) || checkHand(rightHandLandmarks)) fireballTrigger = true;
-      }
-      if (fireballTrigger && !fireballActive && !waterDragonActive && !rasenshurikenActive && !kirinActive) {
+      // ============================================================
+      // FIREBALL: OPEN MOUTH ONLY  (new trigger)
+      // ============================================================
+      if (jawOpen > MOUTH_OPEN_THRESHOLD) mouthOpenFrames++;
+      else mouthOpenFrames = 0;
+
+      const mouthTriggered = mouthOpenFrames >= MOUTH_OPEN_FRAMES;
+      if (mouthTriggered && !fireballActive && !waterDragonActive && !rasenshurikenActive && !kirinActive) {
         fireballActive = true;
         fireballTimer = FIREBALL_DURATION;
         flashKanji('火球', getTheme('fireball').glow);
       }
 
-      // KIRIN: BOTH hands raised above head level (y < 0.35)
-      let kirinTrigger = false;
-      if (leftHandLandmarks && rightHandLandmarks &&
-          leftHandLandmarks[0].y < 0.35 &&
-          rightHandLandmarks[0].y < 0.35) kirinTrigger = true;
-      if (kirinTrigger && !kirinActive && !waterDragonActive && !rasenshurikenActive && !fireballActive) {
-        kirinActive = true;
-        kirinTimer = KIRIN_DURATION;
-        Audio.kirinStrike();
-        flashKanji('麒麟', getTheme('kirin').glow);
-        camShakeX = 25; camShakeY = 18;
+      // ============================================================
+      // KIRIN: ARMS APART → CLAP  (classic gesture restored)
+      // ============================================================
+      if (leftHandLandmarks && rightHandLandmarks) {
+        if (handDist > APART_DISTANCE_THRESHOLD) {
+          handsApartFrames++;
+          // Once charged, spawn charge particles between hands
+          if (handsApartFrames >= APART_FRAMES_THRESHOLD) {
+            kirinCharged = true;
+            kirinChargeGlow = Math.min(1, kirinChargeGlow + 0.1);
+            // Spawn a spark between hands occasionally
+            if (Math.random() < 0.7) {
+              const cx = (leftHandLandmarks[0].x + rightHandLandmarks[0].x) / 2;
+              const cy = (leftHandLandmarks[0].y + rightHandLandmarks[0].y) / 2;
+              chargeParticles.push({
+                x: cx, y: cy,
+                life: 1, decay: 0.03 + Math.random() * 0.02,
+                size: 2 + Math.random() * 4,
+                vx: (Math.random() - 0.5) * 4,
+                vy: (Math.random() - 0.5) * 4
+              });
+            }
+          }
+        } else if (handDist < CLOSE_DISTANCE_THRESHOLD && kirinCharged && !kirinActive) {
+          // CLAP → fire Kirin
+          kirinActive = true;
+          kirinTimer = KIRIN_DURATION;
+          kirinCharged = false;
+          handsApartFrames = 0;
+          kirinChargeGlow = 0;
+          Audio.kirinStrike();
+          flashKanji('麒麟', getTheme('kirin').glow);
+          camShakeX = 25; camShakeY = 18;
+        } else if (handDist > CLOSE_DISTANCE_THRESHOLD && handDist < APART_DISTANCE_THRESHOLD) {
+          // In the middle — decay the charge slowly
+          handsApartFrames = Math.max(0, handsApartFrames - 1);
+          if (handsApartFrames < APART_FRAMES_THRESHOLD) kirinCharged = false;
+        }
+      } else {
+        handsApartFrames = Math.max(0, handsApartFrames - 1);
+        if (handsApartFrames < APART_FRAMES_THRESHOLD) kirinCharged = false;
       }
+      // Decay charge glow when not charged
+      if (!kirinCharged) kirinChargeGlow = Math.max(0, kirinChargeGlow - 0.05);
 
-      // MIST: blink + both hands visible (simpler than before)
+      // MIST: blink + both hands visible
       const mistTrigger = sharinganActive && leftHandLandmarks && rightHandLandmarks;
-      if (mistTrigger && !mistActive && !amaterasuActive) {
+      if (mistTrigger && !mistActive && !amaterasuActive && !kirinCharged) {
         mistActive = true;
         mistTimer = MIST_DURATION;
         flashKanji('霧隠れ', getTheme('mist').glow);
       }
 
-      // AMATERASU: blink + look up (nose above eye midpoint = looking up)
+      // AMATERASU: blink + look up
       let amaterasuTrigger = false;
       if (sharinganActive && faceLandmarks) {
         const nose = faceLandmarks[1];
         const forehead = faceLandmarks[10];
         const chin = faceLandmarks[152];
-        // Looking up: forehead-to-nose is small, nose-to-chin is large
         const upDown = nose.y - forehead.y;
         const chinDelta = chin.y - nose.y;
         if (upDown < 0.055 && chinDelta > 0.11) amaterasuTrigger = true;
@@ -1265,7 +1296,6 @@
       const w = canvas.width, h = canvas.height;
       ctx.clearRect(0, 0, w, h);
 
-      // Apply camera shake to everything
       ctx.save();
       ctx.translate(camShakeX, camShakeY);
 
@@ -1315,12 +1345,30 @@
         drawFireball(mouth, w, h, now, fireballTimer / FIREBALL_DURATION);
         spawnFireParticles(mouth, w, h);
       }
-      updateStatus(statusEls.fireball, fireballActive, 'CASTING', 'HAND NEAR MOUTH');
+      // Status shows live mouth state
+      if (fireballActive) {
+        updateStatus(statusEls.fireball, true, 'CASTING', 'OPEN MOUTH');
+      } else if (mouthOpenFrames > 0) {
+        updateStatus(statusEls.fireball, false, 'CHARGING', 'CHARGING');
+      } else {
+        updateStatus(statusEls.fireball, false, 'IDLE', 'OPEN MOUTH');
+      }
 
       // Kirin
       if (kirinActive) drawKirin(kirinProgress, w, h, now);
-      updateStatus(statusEls.kirin, kirinActive,
-        kirinActive ? 'STRIKE' : 'IDLE', 'BOTH HANDS UP HIGH');
+      // Draw charge indicator when kirin is being charged
+      if (kirinCharged && leftHandLandmarks && rightHandLandmarks && !kirinActive) {
+        drawKirinCharge(leftHandLandmarks, rightHandLandmarks, w, h, now, kirinChargeGlow);
+      }
+      if (kirinActive) {
+        updateStatus(statusEls.kirin, true, 'STRIKE', 'ARMS APART → CLAP');
+      } else if (kirinCharged) {
+        updateStatus(statusEls.kirin, false, 'CHARGED!', 'CLAP NOW');
+      } else if (handsApartFrames > 0) {
+        updateStatus(statusEls.kirin, false, 'CHARGING', 'KEEP APART');
+      } else {
+        updateStatus(statusEls.kirin, false, 'IDLE', 'ARMS APART → CLAP');
+      }
 
       // Mist
       updateStatus(statusEls.mist, mistActive, 'ACTIVE', 'BLINK + HANDS OUT');
@@ -1332,10 +1380,11 @@
       // Particles
       updateSplashes();
       updateFireParticles(w, h);
+      updateChargeParticles();
 
       ctx.restore();
 
-      // Film grain overlay (subtle, unshaken)
+      // Film grain overlay
       drawFilmGrain(w, h);
 
       animationFrame = requestAnimationFrame(predictLoop);
@@ -1348,7 +1397,7 @@
     }
 
     /* ============================================================
-       FILM GRAIN (subtle realism)
+       FILM GRAIN
        ============================================================ */
     let grainCanvas = null, grainCtx = null;
     function drawFilmGrain(w, h) {
@@ -1364,7 +1413,7 @@
       for (let i = 0; i < d.length; i += 4) {
         const v = Math.random() * 255;
         d[i] = d[i+1] = d[i+2] = v;
-        d[i+3] = 8; // low alpha
+        d[i+3] = 8;
       }
       grainCtx.putImageData(imgData, 0, 0);
       ctx.save();
@@ -1427,11 +1476,27 @@
         ctx.globalCompositeOperation = 'lighter';
         const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
         grad.addColorStop(0, `rgba(255, 240, 180, ${p.life})`);
-        grad.addColorStop(0.4, theme.glow.replace('#', 'rgba(') + ', ' + (p.life * 0.8) + ')');
-        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        grad.addColorStop(0.4, hexToRgba(theme.glow, p.life * 0.8));
+        grad.addColorStop(1, hexToRgba(theme.edge, 0));
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fillStyle = grad;
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+    function updateChargeParticles() {
+      const theme = getTheme('kirin');
+      for (let i = chargeParticles.length - 1; i >= 0; i--) {
+        const p = chargeParticles[i];
+        p.x += p.vx; p.y += p.vy;
+        p.life -= p.decay;
+        if (p.life <= 0) { chargeParticles.splice(i, 1); continue; }
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+        ctx.fillStyle = hexToRgba(theme.glow, p.life * 0.9);
         ctx.fill();
         ctx.restore();
       }
@@ -1453,7 +1518,57 @@
     }
 
     /* ============================================================
-       CHIDORI — theme colored
+       KIRIN CHARGE VISUAL — crackling energy between hands
+       ============================================================ */
+    function drawKirinCharge(lmLeft, lmRight, w, h, now, intensity) {
+      const theme = getTheme('kirin');
+      const lx = lmLeft[9].x * w, ly = lmLeft[9].y * h;
+      const rx = lmRight[9].x * w, ry = lmRight[9].y * h;
+      const t = now / 1000;
+
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+
+      // Glow aura around both hands
+      [lx, rx].forEach((x, i) => {
+        const y = i === 0 ? ly : ry;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, 80);
+        g.addColorStop(0, hexToRgba(theme.glow, 0.5 * intensity));
+        g.addColorStop(1, hexToRgba(theme.edge, 0));
+        ctx.beginPath();
+        ctx.arc(x, y, 80, 0, Math.PI * 2);
+        ctx.fillStyle = g;
+        ctx.fill();
+      });
+
+      // Crackling bolts between hands
+      ctx.lineCap = 'round';
+      const midX = (lx + rx) / 2, midY = (ly + ry) / 2;
+      for (let i = 0; i < 8; i++) {
+        const start = i % 2 === 0 ? [lx, ly] : [rx, ry];
+        ctx.beginPath();
+        ctx.moveTo(start[0], start[1]);
+        const segs = 8;
+        const px = midX + (Math.random() - 0.5) * 100;
+        const py = midY + (Math.random() - 0.5) * 100;
+        for (let s = 1; s <= segs; s++) {
+          const tt = s / segs;
+          const jx = start[0] + (px - start[0]) * tt + (Math.random() - 0.5) * 30;
+          const jy = start[1] + (py - start[1]) * tt + (Math.random() - 0.5) * 30;
+          ctx.lineTo(jx, jy);
+        }
+        ctx.strokeStyle = hexToRgba(theme.core, (0.5 + Math.random() * 0.4) * intensity);
+        ctx.lineWidth = 1.5 + Math.random() * 2;
+        ctx.shadowColor = theme.glow;
+        ctx.shadowBlur = 25;
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    /* ============================================================
+       CHIDORI
        ============================================================ */
     function drawChidori(lm, w, h, now) {
       const theme = getTheme('chidori');
@@ -1465,7 +1580,6 @@
 
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
-      // chromatic outer ring
       for (let layer = 0; layer < 5; layer++) {
         const r = auraR + layer * 22;
         const a = 0.42 - layer * 0.07;
@@ -1510,7 +1624,7 @@
     }
 
     /* ============================================================
-       RASENGAN — theme colored
+       RASENGAN
        ============================================================ */
     function drawRasengan(lm, w, h, now) {
       const theme = getTheme('rasengan');
@@ -1574,7 +1688,6 @@
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
       ctx.globalAlpha = Math.min(1, lifeRatio * 2);
-
       for (let i = 5; i >= 0; i--) {
         const r = R + i * 18;
         const a = 0.22 - i * 0.035;
@@ -1628,7 +1741,7 @@
     }
 
     /* ============================================================
-       SHARINGAN — theme colored
+       SHARINGAN
        ============================================================ */
     function drawSharinganOnFace(landmarks, w, h) {
       const theme = getTheme('sharingan');
@@ -1702,7 +1815,7 @@
     }
 
     /* ============================================================
-       WATER DRAGON — theme colored
+       WATER DRAGON
        ============================================================ */
     function drawWaterDragon(progress, w, h, now) {
       const theme = getTheme('waterDragon');
@@ -1891,7 +2004,7 @@
     }
 
     /* ============================================================
-       FIREBALL — theme colored
+       FIREBALL
        ============================================================ */
     function drawFireball(mouth, w, h, now, lifeRatio) {
       const theme = getTheme('fireball');
@@ -1933,7 +2046,7 @@
     }
 
     /* ============================================================
-       KIRIN — theme colored
+       KIRIN
        ============================================================ */
     function drawKirin(progress, w, h, now) {
       const theme = getTheme('kirin');
@@ -2005,7 +2118,7 @@
     }
 
     /* ============================================================
-       MIST — theme colored
+       MIST
        ============================================================ */
     function drawMist(progress, w, h, now) {
       const theme = getTheme('mist');
@@ -2038,7 +2151,7 @@
     }
 
     /* ============================================================
-       AMATERASU — theme colored
+       AMATERASU
        ============================================================ */
     function updateAmaterasu(w, h) {
       const theme = getTheme('amaterasu');
@@ -2110,22 +2223,18 @@
        SCREENSHOT
        ============================================================ */
     shotBtn.onclick = () => {
-      // Compose video + canvas into a temp canvas
       const tmp = document.createElement('canvas');
       tmp.width = video.videoWidth || 1280;
       tmp.height = video.videoHeight || 720;
       const tctx = tmp.getContext('2d');
-      // Draw video mirrored
       tctx.save();
       tctx.scale(-1, 1);
       tctx.drawImage(video, -tmp.width, 0, tmp.width, tmp.height);
       tctx.restore();
-      // Draw effects canvas mirrored (it's already mirrored by CSS, but raw is not)
       tctx.save();
       tctx.scale(-1, 1);
       tctx.drawImage(canvas, -tmp.width, 0, tmp.width, tmp.height);
       tctx.restore();
-
       const link = document.createElement('a');
       link.download = `naruto-jutsu-${Date.now()}.png`;
       link.href = tmp.toDataURL('image/png');
@@ -2137,16 +2246,20 @@
        RESET
        ============================================================ */
     resetBtn.onclick = () => {
-      // Stop all active jutsu and audio
       waterDragonActive = false;
       kirinActive = false;
+      kirinCharged = false;
+      kirinChargeGlow = 0;
+      handsApartFrames = 0;
       rasenshurikenActive = false;
       fireballActive = false;
+      mouthOpenFrames = 0;
       mistActive = false;
       amaterasuActive = false;
       amaterasuFlames.length = 0;
       splashParticles.length = 0;
       fireParticles.length = 0;
+      chargeParticles.length = 0;
       Audio.chidoriStop(); Audio.rasenganStop(); Audio.sharinganStop();
       Audio.fireballStop(); Audio.mistStop();
       flashKanji('RESET', '#00e6ff');
