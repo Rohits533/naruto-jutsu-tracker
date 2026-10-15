@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Real-time webcam hand & eye tracking that triggers Naruto jutsu effects: Chidori, Rasengan, Sharingan, Water Dragon." />
+  <meta name="description" content="Real-time webcam hand & eye tracking with Naruto jutsu VFX: Chidori, Rasengan, Sharingan, Water Dragon." />
   <title>NARUTO JUTSU · TRACKER</title>
 
   <style>
@@ -18,7 +18,6 @@
       color: #cfe9ff;
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
-
     .app-container {
       display: flex;
       flex-wrap: wrap;
@@ -31,7 +30,6 @@
       border-radius: 28px;
       overflow: hidden;
     }
-
     .video-canvas-wrapper {
       position: relative;
       flex: 3 1 640px;
@@ -41,7 +39,6 @@
       overflow: hidden;
       border-right: 1px solid #1e3b4a;
     }
-
     #webcam, #effectCanvas {
       position: absolute;
       inset: 0;
@@ -51,13 +48,13 @@
     #webcam {
       object-fit: cover;
       transform: scaleX(-1);
-      filter: brightness(0.95) contrast(1.05);
+      filter: brightness(0.95) contrast(1.05) saturate(1.1);
     }
     #effectCanvas {
       pointer-events: none;
       transform: scaleX(-1);
+      mix-blend-mode: screen;
     }
-
     .onboarding {
       position: absolute;
       inset: 0;
@@ -73,7 +70,6 @@
       gap: 20px;
     }
     .onboarding.hidden { display: none; }
-
     .onboarding h1 {
       font-size: clamp(1.6rem, 4vw, 2.5rem);
       letter-spacing: 6px;
@@ -87,7 +83,6 @@
       font-size: 1.05rem;
       line-height: 1.5;
     }
-
     .btn-allow {
       background: transparent;
       border: 2px solid #00e6ff;
@@ -109,7 +104,6 @@
       transform: scale(1.02);
     }
     .btn-allow:disabled { opacity: 0.5; cursor: wait; }
-
     .error-msg {
       color: #ff6b6b;
       font-size: 0.9rem;
@@ -119,14 +113,13 @@
       word-break: break-word;
     }
     .error-msg.info { color: #6ec4ff; }
-
     .sidebar {
       flex: 1 1 260px;
       background: rgba(5, 12, 18, 0.95);
       padding: 24px 18px;
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      gap: 22px;
       border-left: 1px solid #1e3b4a;
     }
     .sidebar h2 {
@@ -139,8 +132,7 @@
       text-transform: uppercase;
       text-shadow: 0 0 8px #00a6ff;
     }
-    .jutsu-list { display: flex; flex-direction: column; gap: 18px; }
-
+    .jutsu-list { display: flex; flex-direction: column; gap: 16px; }
     .jutsu-item {
       background: #0b151e;
       border-left: 4px solid #2a4d5e;
@@ -173,9 +165,7 @@
       letter-spacing: 1px;
     }
     .status-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
+      width: 10px; height: 10px; border-radius: 50%;
       background: #1a3a4a;
       box-shadow: 0 0 5px #000;
       transition: 0.2s;
@@ -198,6 +188,25 @@
       color: #aad4ff;
       letter-spacing: 1px;
     }
+    .audio-toggle {
+      background: #0e1c26;
+      border: 1px solid #2a4d5e;
+      color: #aad4ff;
+      padding: 10px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      letter-spacing: 2px;
+      font-family: inherit;
+      transition: 0.2s;
+      text-transform: uppercase;
+    }
+    .audio-toggle:hover { border-color: #00e6ff; color: #00e6ff; }
+    .audio-toggle.on {
+      border-color: #00ff9d;
+      color: #00ff9d;
+      box-shadow: 0 0 15px rgba(0, 255, 157, 0.3);
+    }
     .footer-note {
       margin-top: auto;
       color: #2d4a5c;
@@ -214,7 +223,6 @@
     <div class="video-canvas-wrapper">
       <video id="webcam" autoplay playsinline muted></video>
       <canvas id="effectCanvas"></canvas>
-
       <div class="onboarding" id="onboardingOverlay">
         <h1>SHINOBI</h1>
         <p>Allow webcam access to activate jutsu tracking. Hand &amp; eye tracking will begin once the camera is live.</p>
@@ -247,41 +255,35 @@
           <div class="jutsu-desc">Bring hands close together (chest seal)</div>
         </div>
       </div>
+      <button class="audio-toggle" id="audioToggle">🔊 AUDIO: ON</button>
       <div class="footer-note">HAND SEALS · EYE TRACKING · JUTSU</div>
     </aside>
   </div>
 
-  <!-- =========================================================
-       MAIN SCRIPT — uses ES module import (official MediaPipe
-       recommended pattern as of 2024+). This eliminates the
-       global-namespace race entirely.
-       ========================================================= -->
   <script type="module">
-    /* ---------- 1. IMPORT MEDIAPIPE (TOP LEVEL) ---------- */
+    /* ============================================================
+       MEDIAPIPE — ES module import (top-level await)
+       ============================================================ */
     const VERSION = '0.10.12';
     const CDN = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${VERSION}`;
 
-    const errorMsg   = document.getElementById('errorMsg');
-    const allowBtn   = document.getElementById('allowBtn');
+    const errorMsg = document.getElementById('errorMsg');
+    const allowBtn = document.getElementById('allowBtn');
 
-    // Set a hard timeout — if models don't load in 20s, tell the user.
     const loadTimeout = setTimeout(() => {
       errorMsg.classList.remove('info');
-      errorMsg.textContent = 'MediaPipe timed out. Check DevTools console for details.';
+      errorMsg.textContent = 'MediaPipe timed out. Check DevTools console.';
       allowBtn.disabled = false;
       allowBtn.textContent = 'RELOAD';
       allowBtn.onclick = () => location.reload();
     }, 20000);
 
     let FilesetResolver, HandLandmarker, FaceLandmarker;
-
     try {
-      // Dynamic import so we can catch network/module errors cleanly
       const visionModule = await import(`${CDN}/vision_bundle.mjs`);
       FilesetResolver = visionModule.FilesetResolver;
       HandLandmarker  = visionModule.HandLandmarker;
       FaceLandmarker  = visionModule.FaceLandmarker;
-
       if (!FilesetResolver || !HandLandmarker || !FaceLandmarker) {
         throw new Error('MediaPipe module loaded but exports are missing.');
       }
@@ -293,7 +295,6 @@
       allowBtn.disabled = false;
       allowBtn.textContent = 'RELOAD';
       allowBtn.onclick = () => location.reload();
-      // Stop execution — the rest of the module depends on these classes
       throw err;
     }
 
@@ -303,28 +304,257 @@
     allowBtn.disabled = false;
     allowBtn.textContent = 'ALLOW WEBCAM';
 
-    /* ---------- 2. DOM ---------- */
+    /* ============================================================
+       DOM
+       ============================================================ */
     const video = document.getElementById('webcam');
     const canvas = document.getElementById('effectCanvas');
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: true });
     const onboardingOverlay = document.getElementById('onboardingOverlay');
+    const audioToggle = document.getElementById('audioToggle');
 
-    const chidoriItem      = document.getElementById('statusChidori');
-    const rasenganItem     = document.getElementById('statusRasengan');
-    const sharinganItem    = document.getElementById('statusSharingan');
-    const waterDragonItem  = document.getElementById('statusWaterDragon');
-    const chidoriText      = document.getElementById('chidoriText');
-    const rasenganText     = document.getElementById('rasenganText');
-    const sharinganText    = document.getElementById('sharinganText');
-    const waterDragonText  = document.getElementById('waterDragonText');
+    const chidoriItem = document.getElementById('statusChidori');
+    const rasenganItem = document.getElementById('statusRasengan');
+    const sharinganItem = document.getElementById('statusSharingan');
+    const waterDragonItem = document.getElementById('statusWaterDragon');
+    const chidoriText = document.getElementById('chidoriText');
+    const rasenganText = document.getElementById('rasenganText');
+    const sharinganText = document.getElementById('sharinganText');
+    const waterDragonText = document.getElementById('waterDragonText');
 
-    /* ---------- 3. STATE ---------- */
+    /* ============================================================
+       AUDIO ENGINE — synthesized SFX (no copyright)
+       ============================================================ */
+    const Audio = (() => {
+      let ctxA = null;
+      let enabled = true;
+      let chidoriNode = null, chidoriGain = null;
+      let rasenganOscs = [], rasenganGain = null, rasenganLFO = null;
+      let sharinganOsc = null, sharinganGain = null;
+      let noiseBuffer = null;
+
+      function init() {
+        if (ctxA) return;
+        try {
+          ctxA = new (window.AudioContext || window.webkitAudioContext)();
+          const len = ctxA.sampleRate * 2;
+          noiseBuffer = ctxA.createBuffer(1, len, ctxA.sampleRate);
+          const data = noiseBuffer.getChannelData(0);
+          for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+        } catch (e) { console.warn('Audio init failed', e); }
+      }
+
+      function ensureRunning() {
+        init();
+        if (ctxA && ctxA.state === 'suspended') ctxA.resume();
+      }
+
+      /* ----- CHIDORI: filtered noise crackle + high sparkles ----- */
+      function chidoriStart() {
+        ensureRunning();
+        if (!ctxA || !enabled || chidoriNode) return;
+
+        const src = ctxA.createBufferSource();
+        src.buffer = noiseBuffer;
+        src.loop = true;
+
+        const bp = ctxA.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.frequency.value = 3200;
+        bp.Q.value = 1.2;
+
+        const hp = ctxA.createBiquadFilter();
+        hp.type = 'highpass';
+        hp.frequency.value = 800;
+
+        const g = ctxA.createGain();
+        g.gain.value = 0;
+        g.gain.linearRampToValueAtTime(0.16, ctxA.currentTime + 0.15);
+
+        // LFO for crackle pulsing
+        const lfo = ctxA.createOscillator();
+        lfo.type = 'square';
+        lfo.frequency.value = 22;
+        const lfoGain = ctxA.createGain();
+        lfoGain.gain.value = 0.05;
+        lfo.connect(lfoGain).connect(g.gain);
+        lfo.start();
+
+        src.connect(bp).connect(hp).connect(g).connect(ctxA.destination);
+        src.start();
+
+        chidoriNode = { src, lfo };
+        chidoriGain = g;
+      }
+
+      function chidoriStop() {
+        if (!chidoriNode) return;
+        const t = ctxA.currentTime;
+        chidoriGain.gain.cancelScheduledValues(t);
+        chidoriGain.gain.linearRampToValueAtTime(0, t + 0.2);
+        try { chidoriNode.src.stop(t + 0.25); } catch (e) {}
+        try { chidoriNode.lfo.stop(t + 0.25); } catch (e) {}
+        chidoriNode = null;
+      }
+
+      /* ----- RASENGAN: detuned sine stack + slow LFO wobble ----- */
+      function rasenganStart() {
+        ensureRunning();
+        if (!ctxA || !enabled || rasenganOscs.length) return;
+
+        const master = ctxA.createGain();
+        master.gain.value = 0;
+        master.gain.linearRampToValueAtTime(0.09, ctxA.currentTime + 0.3);
+
+        const freqs = [110, 165, 220, 330, 440];
+        freqs.forEach((f, i) => {
+          const o = ctxA.createOscillator();
+          o.type = i % 2 === 0 ? 'sine' : 'triangle';
+          o.frequency.value = f;
+          o.detune.value = (i - 2) * 8;
+          const g = ctxA.createGain();
+          g.gain.value = 0.5 / freqs.length;
+          o.connect(g).connect(master);
+          o.start();
+          rasenganOscs.push(o);
+        });
+
+        // Slow wobble LFO
+        const lfo = ctxA.createOscillator();
+        lfo.type = 'sine';
+        lfo.frequency.value = 4.5;
+        const lfoGain = ctxA.createGain();
+        lfoGain.gain.value = 6;
+        lfo.connect(lfoGain);
+        rasenganOscs.forEach(o => lfoGain.connect(o.detune));
+        lfo.start();
+        rasenganLFO = lfo;
+
+        master.connect(ctxA.destination);
+        rasenganGain = master;
+      }
+
+      function rasenganStop() {
+        if (!rasenganOscs.length) return;
+        const t = ctxA.currentTime;
+        rasenganGain.gain.cancelScheduledValues(t);
+        rasenganGain.gain.linearRampToValueAtTime(0, t + 0.25);
+        setTimeout(() => {
+          rasenganOscs.forEach(o => { try { o.stop(); } catch (e) {} });
+          try { rasenganLFO.stop(); } catch (e) {}
+          rasenganOscs = [];
+          rasenganLFO = null;
+        }, 300);
+      }
+
+      /* ----- SHARINGAN: subtle red drone ----- */
+      function sharinganStart() {
+        ensureRunning();
+        if (!ctxA || !enabled || sharinganOsc) return;
+        const o = ctxA.createOscillator();
+        o.type = 'sawtooth';
+        o.frequency.value = 55;
+        const f = ctxA.createBiquadFilter();
+        f.type = 'lowpass';
+        f.frequency.value = 220;
+        const g = ctxA.createGain();
+        g.gain.value = 0;
+        g.gain.linearRampToValueAtTime(0.06, ctxA.currentTime + 0.15);
+        o.connect(f).connect(g).connect(ctxA.destination);
+        o.start();
+        sharinganOsc = o; sharinganGain = g;
+      }
+
+      function sharinganStop() {
+        if (!sharinganOsc) return;
+        const t = ctxA.currentTime;
+        sharinganGain.gain.cancelScheduledValues(t);
+        sharinganGain.gain.linearRampToValueAtTime(0, t + 0.2);
+        try { sharinganOsc.stop(t + 0.25); } catch (e) {}
+        sharinganOsc = null;
+      }
+
+      /* ----- WATER DRAGON: swept saw + noise burst ----- */
+      function waterDragonRoar() {
+        ensureRunning();
+        if (!ctxA || !enabled) return;
+        const t = ctxA.currentTime;
+
+        const o = ctxA.createOscillator();
+        o.type = 'sawtooth';
+        o.frequency.setValueAtTime(80, t);
+        o.frequency.exponentialRampToValueAtTime(320, t + 0.4);
+        o.frequency.exponentialRampToValueAtTime(60, t + 1.4);
+
+        const f = ctxA.createBiquadFilter();
+        f.type = 'lowpass';
+        f.frequency.setValueAtTime(600, t);
+        f.frequency.exponentialRampToValueAtTime(2400, t + 0.5);
+        f.frequency.exponentialRampToValueAtTime(400, t + 1.4);
+
+        const g = ctxA.createGain();
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.2, t + 0.15);
+        g.gain.linearRampToValueAtTime(0.05, t + 1.0);
+        g.gain.linearRampToValueAtTime(0, t + 1.6);
+
+        o.connect(f).connect(g).connect(ctxA.destination);
+        o.start(t);
+        o.stop(t + 1.7);
+
+        // Noise splash
+        const src = ctxA.createBufferSource();
+        src.buffer = noiseBuffer;
+        const nf = ctxA.createBiquadFilter();
+        nf.type = 'highpass';
+        nf.frequency.value = 1200;
+        const ng = ctxA.createGain();
+        ng.gain.setValueAtTime(0.15, t);
+        ng.gain.exponentialRampToValueAtTime(0.001, t + 0.9);
+        src.connect(nf).connect(ng).connect(ctxA.destination);
+        src.start(t);
+        src.stop(t + 1.0);
+      }
+
+      function setEnabled(v) {
+        enabled = v;
+        if (!v) {
+          chidoriStop();
+          rasenganStop();
+          sharinganStop();
+        }
+      }
+
+      return {
+        chidoriStart, chidoriStop,
+        rasenganStart, rasenganStop,
+        sharinganStart, sharinganStop,
+        waterDragonRoar,
+        setEnabled,
+        ensureRunning
+      };
+    })();
+
+    let audioEnabled = true;
+    audioToggle.onclick = () => {
+      audioEnabled = !audioEnabled;
+      audioToggle.textContent = audioEnabled ? '🔊 AUDIO: ON' : '🔇 AUDIO: OFF';
+      audioToggle.classList.toggle('on', audioEnabled);
+      Audio.setEnabled(audioEnabled);
+    };
+
+    /* ============================================================
+       STATE
+       ============================================================ */
     let webcamReady = false;
     let visionReady = false;
 
     let leftHandLandmarks = null;
     let rightHandLandmarks = null;
     let sharinganActive = false;
+    let chidoriPrevActive = false;
+    let rasenganPrevActive = false;
+    let sharinganPrevActive = false;
 
     let handsCloseFrames = 0;
     const CLOSE_FRAMES_THRESHOLD = 8;
@@ -332,54 +562,59 @@
 
     let waterDragonActive = false;
     let waterDragonTimer = 0;
-    const WATER_DRAGON_DURATION = 180;
+    const WATER_DRAGON_DURATION = 200;
     let waterDragonProgress = 0;
 
     let handLandmarker = null;
     let faceLandmarker = null;
     let animationFrame = null;
     let lastVideoTime = -1;
-    let lastFrameTime = performance.now();
-    let fps = 0;
 
-    /* ---------- 4. CANVAS SIZING ---------- */
+    // Particle pools
+    const sparkParticles = [];   // chidori sparks
+    const ringParticles = [];    // rasengan orbiting
+    const splashParticles = [];  // water dragon splashes
+
+    /* ============================================================
+       CANVAS SIZING
+       ============================================================ */
     function resizeCanvas() {
       const rect = video.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) return;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const newW = Math.floor(rect.width * dpr);
-      const newH = Math.floor(rect.height * dpr);
-      if (canvas.width !== newW || canvas.height !== newH) {
-        canvas.width = newW;
-        canvas.height = newH;
+      const nW = Math.floor(rect.width * dpr);
+      const nH = Math.floor(rect.height * dpr);
+      if (canvas.width !== nW || canvas.height !== nH) {
+        canvas.width = nW; canvas.height = nH;
         canvas.style.width = rect.width + 'px';
         canvas.style.height = rect.height + 'px';
       }
     }
     window.addEventListener('resize', resizeCanvas);
 
-    /* ---------- 5. WEBCAM ---------- */
+    /* ============================================================
+       WEBCAM
+       ============================================================ */
     allowBtn.onclick = async function () {
       allowBtn.disabled = true;
       allowBtn.textContent = 'STARTING CAMERA...';
       errorMsg.classList.remove('info');
       errorMsg.textContent = '';
+      Audio.ensureRunning();
 
       try {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
           throw new Error('getUserMedia not supported in this browser.');
         }
-
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
           audio: false
         });
-
         video.srcObject = stream;
         await new Promise((resolve, reject) => {
           if (video.readyState >= 2) return resolve();
           video.onloadedmetadata = () => resolve();
-          video.onerror = () => reject(new Error('Video element failed to load stream.'));
+          video.onerror = () => reject(new Error('Video failed to load stream.'));
         });
         await video.play();
 
@@ -395,22 +630,21 @@
       }
     };
 
-    /* ---------- 6. MEDIAPIPE MODEL INIT ---------- */
+    /* ============================================================
+       MODEL INIT
+       ============================================================ */
     async function initVision() {
       try {
         errorMsg.classList.add('info');
-        errorMsg.textContent = 'Loading landmarker models (this can take 5–10s)...';
-
+        errorMsg.textContent = 'Loading landmarker models...';
         const visionFileset = await FilesetResolver.forVisionTasks(`${CDN}/wasm`);
 
         handLandmarker = await HandLandmarker.createFromOptions(visionFileset, {
           baseOptions: {
-            modelAssetPath:
-              'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
+            modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
             delegate: 'GPU'
           },
-          runningMode: 'VIDEO',
-          numHands: 2,
+          runningMode: 'VIDEO', numHands: 2,
           minHandDetectionConfidence: 0.5,
           minHandPresenceConfidence: 0.5,
           minTrackingConfidence: 0.5
@@ -418,12 +652,10 @@
 
         faceLandmarker = await FaceLandmarker.createFromOptions(visionFileset, {
           baseOptions: {
-            modelAssetPath:
-              'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
+            modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
             delegate: 'GPU'
           },
-          runningMode: 'VIDEO',
-          numFaces: 1,
+          runningMode: 'VIDEO', numFaces: 1,
           minFaceDetectionConfidence: 0.5,
           minFacePresenceConfidence: 0.5,
           minTrackingConfidence: 0.5,
@@ -440,51 +672,38 @@
       }
     }
 
-    /* ---------- 7. MAIN LOOP ---------- */
+    /* ============================================================
+       MAIN LOOP
+       ============================================================ */
     function predictLoop() {
       if (!webcamReady || !visionReady || !video.videoWidth) {
         animationFrame = requestAnimationFrame(predictLoop);
         return;
       }
-
       resizeCanvas();
 
       const now = performance.now();
-      const dt = now - lastFrameTime;
-      lastFrameTime = now;
-      if (dt > 0) fps = Math.round(1000 / dt);
-
-      let handResults = null;
-      let faceResults = null;
-
+      let handResults = null, faceResults = null;
       try {
         if (video.currentTime !== lastVideoTime) {
           lastVideoTime = video.currentTime;
           handResults = handLandmarker.detectForVideo(video, now);
           faceResults = faceLandmarker.detectForVideo(video, now);
         }
-      } catch (err) {
-        // Swallow transient MediaPipe errors
-      }
+      } catch (e) {}
 
       /* --- Hands --- */
       leftHandLandmarks = null;
       rightHandLandmarks = null;
-
       if (handResults && handResults.landmarks && handResults.landmarks.length) {
-        handResults.landmarks.forEach((landmarks, i) => {
+        handResults.landmarks.forEach((lm, i) => {
           const h = handResults.handednesses && handResults.handednesses[i];
-          const handedness = h && h[0] && h[0].displayName;
-          if (handedness === 'Left') leftHandLandmarks = landmarks;
-          else if (handedness === 'Right') rightHandLandmarks = landmarks;
+          const name = h && h[0] && h[0].displayName;
+          if (name === 'Left') leftHandLandmarks = lm;
+          else if (name === 'Right') rightHandLandmarks = lm;
           else {
-            if (landmarks[0].x < 0.5) {
-              if (!rightHandLandmarks) rightHandLandmarks = landmarks;
-              else leftHandLandmarks = landmarks;
-            } else {
-              if (!leftHandLandmarks) leftHandLandmarks = landmarks;
-              else rightHandLandmarks = landmarks;
-            }
+            if (lm[0].x < 0.5) { if (!rightHandLandmarks) rightHandLandmarks = lm; else leftHandLandmarks = lm; }
+            else { if (!leftHandLandmarks) leftHandLandmarks = lm; else rightHandLandmarks = lm; }
           }
         });
       }
@@ -498,36 +717,46 @@
         sharinganActive = ((l ? l.score : 0) + (r ? r.score : 0)) / 2 > 0.5;
       }
 
-      /* --- Water Dragon sequence --- */
+      /* --- Water dragon sequence --- */
       if (leftHandLandmarks && rightHandLandmarks) {
         const dx = leftHandLandmarks[0].x - rightHandLandmarks[0].x;
         const dy = leftHandLandmarks[0].y - rightHandLandmarks[0].y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < CLOSE_DISTANCE_THRESHOLD) {
-          handsCloseFrames++;
-        } else {
+        if (dist < CLOSE_DISTANCE_THRESHOLD) handsCloseFrames++;
+        else {
           if (handsCloseFrames >= CLOSE_FRAMES_THRESHOLD && !waterDragonActive) {
             waterDragonActive = true;
             waterDragonTimer = WATER_DRAGON_DURATION;
+            Audio.waterDragonRoar();
+            spawnSplashes(canvas.width, canvas.height);
           }
           handsCloseFrames = 0;
         }
-      } else {
-        handsCloseFrames = 0;
-      }
+      } else handsCloseFrames = 0;
 
       if (waterDragonActive) {
         waterDragonTimer--;
         waterDragonProgress = 1 - waterDragonTimer / WATER_DRAGON_DURATION;
-        if (waterDragonTimer <= 0) {
-          waterDragonActive = false;
-          waterDragonProgress = 0;
-        }
+        if (waterDragonTimer <= 0) { waterDragonActive = false; waterDragonProgress = 0; }
       }
 
+      /* --- Audio triggers --- */
+      const chidoriActive = !!leftHandLandmarks;
+      if (chidoriActive && !chidoriPrevActive) Audio.chidoriStart();
+      if (!chidoriActive && chidoriPrevActive) Audio.chidoriStop();
+      chidoriPrevActive = chidoriActive;
+
+      const rasenganActive = !!rightHandLandmarks;
+      if (rasenganActive && !rasenganPrevActive) Audio.rasenganStart();
+      if (!rasenganActive && rasenganPrevActive) Audio.rasenganStop();
+      rasenganPrevActive = rasenganActive;
+
+      if (sharinganActive && !sharinganPrevActive) Audio.sharinganStart();
+      if (!sharinganActive && sharinganPrevActive) Audio.sharinganStop();
+      sharinganPrevActive = sharinganActive;
+
       /* --- Render --- */
-      const w = canvas.width;
-      const h = canvas.height;
+      const w = canvas.width, h = canvas.height;
       ctx.clearRect(0, 0, w, h);
 
       if (sharinganActive && faceResults && faceResults.faceLandmarks && faceResults.faceLandmarks.length) {
@@ -535,255 +764,486 @@
       }
 
       if (leftHandLandmarks) {
-        drawChidori(leftHandLandmarks, w, h);
+        drawChidori(leftHandLandmarks, w, h, now);
         updateStatus(chidoriItem, chidoriText, true, 'ACTIVE');
-      } else {
-        updateStatus(chidoriItem, chidoriText, false, 'STANDBY');
-      }
+      } else updateStatus(chidoriItem, chidoriText, false, 'STANDBY');
 
       if (rightHandLandmarks) {
-        drawRasengan(rightHandLandmarks, w, h);
+        drawRasengan(rightHandLandmarks, w, h, now);
         updateStatus(rasenganItem, rasenganText, true, 'ACTIVE');
-      } else {
-        updateStatus(rasenganItem, rasenganText, false, 'STANDBY');
-      }
+      } else updateStatus(rasenganItem, rasenganText, false, 'STANDBY');
 
       updateStatus(sharinganItem, sharinganText, sharinganActive, sharinganActive ? 'ACTIVE' : 'STANDBY');
 
       if (waterDragonActive) {
         updateStatus(waterDragonItem, waterDragonText, true, 'CASTING');
-        drawWaterDragon(waterDragonProgress, w, h);
+        drawWaterDragon(waterDragonProgress, w, h, now);
       } else if (handsCloseFrames > 0) {
         updateStatus(waterDragonItem, waterDragonText, false, 'CHARGING');
-      } else {
-        updateStatus(waterDragonItem, waterDragonText, false, 'IDLE');
-      }
+      } else updateStatus(waterDragonItem, waterDragonText, false, 'IDLE');
+
+      /* --- Update & draw particles --- */
+      updateAndDrawParticles(w, h, now);
 
       animationFrame = requestAnimationFrame(predictLoop);
     }
 
-    /* ---------- 8. STATUS HELPER ---------- */
     function updateStatus(itemEl, textEl, isActive, label) {
-      if (isActive) itemEl.classList.add('active');
-      else itemEl.classList.remove('active');
+      itemEl.classList.toggle('active', isActive);
       textEl.textContent = label;
     }
 
-    /* ---------- 9. DRAWING ---------- */
-    function drawChidori(landmarks, w, h) {
-      const palm = landmarks[9];
-      const x = palm.x * w;
-      const y = palm.y * h;
-      const scale = w / 1280;
-
-      ctx.save();
-      ctx.shadowColor = '#00ccff';
-      ctx.shadowBlur = 35 * scale;
-      ctx.lineWidth = 3.5 * scale;
-
-      for (let i = 0; i < 14; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const length = (30 + Math.random() * 80) * scale;
-        const startX = x + (Math.random() - 0.5) * 20 * scale;
-        const startY = y + (Math.random() - 0.5) * 20 * scale;
-        const endX = startX + Math.cos(angle) * length;
-        const endY = startY + Math.sin(angle) * length;
-
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        for (let s = 1; s <= 5; s++) {
-          const t = s / 5;
-          ctx.lineTo(
-            startX + (endX - startX) * t + (Math.random() - 0.5) * 18 * scale,
-            startY + (endY - startY) * t + (Math.random() - 0.5) * 18 * scale
-          );
-        }
-        ctx.strokeStyle = 'rgba(180, 240, 255, ' + (0.55 + Math.random() * 0.45) + ')';
-        ctx.stroke();
+    /* ============================================================
+       PARTICLE SPAWNERS
+       ============================================================ */
+    function spawnSplashes(w, h) {
+      for (let i = 0; i < 60; i++) {
+        splashParticles.push({
+          x: w * 0.5 + (Math.random() - 0.5) * w * 0.4,
+          y: h * 0.5 + (Math.random() - 0.5) * h * 0.3,
+          vx: (Math.random() - 0.5) * 6,
+          vy: -Math.random() * 4 - 1,
+          life: 1,
+          decay: 0.012 + Math.random() * 0.01,
+          size: 2 + Math.random() * 4
+        });
       }
-
-      const grad = ctx.createRadialGradient(x, y, 2 * scale, x, y, 40 * scale);
-      grad.addColorStop(0, 'rgba(200, 250, 255, 0.55)');
-      grad.addColorStop(1, 'rgba(0, 180, 255, 0)');
-      ctx.beginPath();
-      ctx.arc(x, y, 40 * scale, 0, Math.PI * 2);
-      ctx.fillStyle = grad;
-      ctx.shadowBlur = 55 * scale;
-      ctx.fill();
-      ctx.restore();
     }
 
-    function drawRasengan(landmarks, w, h) {
+    function updateAndDrawParticles(w, h) {
+      // Splashes
+      for (let i = splashParticles.length - 1; i >= 0; i--) {
+        const p = splashParticles[i];
+        p.x += p.vx; p.y += p.vy;
+        p.vy += 0.15;
+        p.vx *= 0.98;
+        p.life -= p.decay;
+        if (p.life <= 0) { splashParticles.splice(i, 1); continue; }
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(180, 230, 255, ${p.life * 0.7})`;
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    /* ============================================================
+       CHIDORI
+       ============================================================ */
+    function drawChidori(landmarks, w, h, now) {
       const palm = landmarks[9];
       const x = palm.x * w;
       const y = palm.y * h;
       const scale = w / 1280;
-      const radius = 42 * scale;
+      const t = now / 1000;
 
       ctx.save();
-      ctx.shadowColor = '#2a8aff';
-      ctx.shadowBlur = 55 * scale;
+      ctx.globalCompositeOperation = 'lighter';
 
-      const grad = ctx.createRadialGradient(x - 10 * scale, y - 10 * scale, 5 * scale, x, y, radius);
-      grad.addColorStop(0, '#cfefff');
-      grad.addColorStop(0.5, '#1e90ff');
-      grad.addColorStop(1, '#003cff');
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.fillStyle = grad;
-      ctx.fill();
-
-      const spin = performance.now() / 250;
-      for (let i = 0; i < 10; i++) {
-        const angle = spin + i * (Math.PI * 2 / 10);
-        const r = radius * 0.55;
+      // Outer aura (layered radial gradients)
+      for (let layer = 0; layer < 4; layer++) {
+        const r = (60 + layer * 25) * scale;
+        const a = 0.35 - layer * 0.07;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+        g.addColorStop(0, `rgba(200, 245, 255, ${a})`);
+        g.addColorStop(0.6, `rgba(80, 200, 255, ${a * 0.6})`);
+        g.addColorStop(1, 'rgba(0, 100, 255, 0)');
         ctx.beginPath();
-        ctx.arc(x + Math.cos(angle) * r, y + Math.sin(angle) * r, 5 * scale, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(220, 245, 255, 0.95)';
-        ctx.shadowBlur = 25 * scale;
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fillStyle = g;
         ctx.fill();
       }
 
+      // Fractal lightning bolts
+      ctx.lineCap = 'round';
+      const boltCount = 18;
+      for (let b = 0; b < boltCount; b++) {
+        const baseAngle = (b / boltCount) * Math.PI * 2 + t * 3;
+        const len = (50 + Math.random() * 90) * scale;
+        const startX = x + (Math.random() - 0.5) * 15 * scale;
+        const startY = y + (Math.random() - 0.5) * 15 * scale;
+        const endX = startX + Math.cos(baseAngle + (Math.random() - 0.5) * 0.6) * len;
+        const endY = startY + Math.sin(baseAngle + (Math.random() - 0.5) * 0.6) * len;
+
+        // Main bolt
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        let px = startX, py = startY;
+        const segs = 7;
+        for (let s = 1; s <= segs; s++) {
+          const tt = s / segs;
+          const jx = startX + (endX - startX) * tt + (Math.random() - 0.5) * 25 * scale;
+          const jy = startY + (endY - startY) * tt + (Math.random() - 0.5) * 25 * scale;
+          ctx.lineTo(jx, jy);
+          px = jx; py = jy;
+        }
+        ctx.strokeStyle = `rgba(220, 250, 255, ${0.7 + Math.random() * 0.3})`;
+        ctx.lineWidth = (1.5 + Math.random() * 2.5) * scale;
+        ctx.shadowColor = '#00e6ff';
+        ctx.shadowBlur = 20 * scale;
+        ctx.stroke();
+      }
+
+      // Core
+      ctx.shadowBlur = 60 * scale;
+      ctx.shadowColor = '#aaefff';
+      const coreG = ctx.createRadialGradient(x, y, 0, x, y, 22 * scale);
+      coreG.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+      coreG.addColorStop(0.4, 'rgba(180, 240, 255, 0.7)');
+      coreG.addColorStop(1, 'rgba(0, 180, 255, 0)');
       ctx.beginPath();
-      ctx.arc(x, y, 10 * scale, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffffff';
-      ctx.shadowBlur = 70 * scale;
+      ctx.arc(x, y, 22 * scale, 0, Math.PI * 2);
+      ctx.fillStyle = coreG;
       ctx.fill();
+
       ctx.restore();
     }
 
+    /* ============================================================
+       RASENGAN
+       ============================================================ */
+    function drawRasengan(landmarks, w, h, now) {
+      const palm = landmarks[9];
+      const x = palm.x * w;
+      const y = palm.y * h;
+      const scale = w / 1280;
+      const R = 48 * scale;
+      const t = now / 1000;
+
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+
+      // Volumetric outer shell (multiple gradient layers)
+      for (let i = 4; i >= 0; i--) {
+        const r = R + i * 8 * scale;
+        const a = 0.18 - i * 0.03;
+        const g = ctx.createRadialGradient(x, y, R * 0.3, x, y, r);
+        g.addColorStop(0, `rgba(200, 235, 255, ${a})`);
+        g.addColorStop(0.7, `rgba(60, 140, 255, ${a * 0.8})`);
+        g.addColorStop(1, 'rgba(0, 60, 200, 0)');
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fillStyle = g;
+        ctx.fill();
+      }
+
+      // Main sphere
+      const sphereG = ctx.createRadialGradient(x - R * 0.35, y - R * 0.35, R * 0.1, x, y, R);
+      sphereG.addColorStop(0, '#ffffff');
+      sphereG.addColorStop(0.25, '#cfeaff');
+      sphereG.addColorStop(0.55, '#2f8fff');
+      sphereG.addColorStop(0.85, '#0a4ed8');
+      sphereG.addColorStop(1, '#021a5c');
+      ctx.beginPath();
+      ctx.arc(x, y, R, 0, Math.PI * 2);
+      ctx.fillStyle = sphereG;
+      ctx.fill();
+
+      // Spiral arm particles (rotating)
+      const arms = 4;
+      const particlesPerArm = 14;
+      for (let a = 0; a < arms; a++) {
+        for (let p = 0; p < particlesPerArm; p++) {
+          const angle = t * 4 + a * (Math.PI * 2 / arms) + p * 0.28;
+          const radius = R * (0.15 + p / particlesPerArm * 0.8);
+          const px = x + Math.cos(angle) * radius;
+          const py = y + Math.sin(angle) * radius;
+          const pSize = (3 - p / particlesPerArm * 2) * scale + 1;
+          const alpha = 0.9 - p / particlesPerArm * 0.6;
+          ctx.beginPath();
+          ctx.arc(px, py, pSize, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(230, 250, 255, ${alpha})`;
+          ctx.fill();
+        }
+      }
+
+      // Bright core
+      ctx.shadowColor = '#cfefff';
+      ctx.shadowBlur = 80 * scale;
+      const coreG = ctx.createRadialGradient(x, y, 0, x, y, R * 0.35);
+      coreG.addColorStop(0, 'rgba(255, 255, 255, 1)');
+      coreG.addColorStop(0.5, 'rgba(180, 230, 255, 0.8)');
+      coreG.addColorStop(1, 'rgba(100, 180, 255, 0)');
+      ctx.beginPath();
+      ctx.arc(x, y, R * 0.35, 0, Math.PI * 2);
+      ctx.fillStyle = coreG;
+      ctx.fill();
+
+      // Outer ring arcs (aesthetic)
+      ctx.shadowBlur = 20 * scale;
+      ctx.lineWidth = 1.5 * scale;
+      for (let i = 0; i < 3; i++) {
+        const ringR = R * (1.15 + i * 0.12);
+        ctx.beginPath();
+        ctx.arc(x, y, ringR, t * 2 + i, t * 2 + i + Math.PI * 1.4);
+        ctx.strokeStyle = `rgba(180, 230, 255, ${0.5 - i * 0.1})`;
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    /* ============================================================
+       SHARINGAN
+       ============================================================ */
     function drawSharinganOnFace(landmarks, w, h) {
       const lx = (landmarks[33].x + landmarks[133].x) / 2;
       const ly = (landmarks[33].y + landmarks[133].y) / 2;
       const rx = (landmarks[362].x + landmarks[263].x) / 2;
       const ry = (landmarks[362].y + landmarks[263].y) / 2;
 
-      const dx = (lx - rx) * w;
-      const dy = (ly - ry) * h;
-      const eyeDist = Math.sqrt(dx * dx + dy * dy);
-      const radius = Math.max(10, eyeDist * 0.22);
+      // Eye radius estimated from face geometry
+      const dxEye = (lx - rx) * w;
+      const dyEye = (ly - ry) * h;
+      const eyeDist = Math.sqrt(dxEye * dxEye + dyEye * dyEye);
+      const radius = Math.max(12, eyeDist * 0.24);
 
       drawSharinganAt(lx * w, ly * h, radius);
       drawSharinganAt(rx * w, ry * h, radius);
     }
 
     function drawSharinganAt(cx, cy, radius) {
+      const t = performance.now() / 1000;
+
       ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+
+      // Outer glow
+      const glow = ctx.createRadialGradient(cx, cy, radius * 0.6, cx, cy, radius * 2.2);
+      glow.addColorStop(0, 'rgba(255, 30, 30, 0.5)');
+      glow.addColorStop(0.5, 'rgba(180, 0, 0, 0.25)');
+      glow.addColorStop(1, 'rgba(120, 0, 0, 0)');
       ctx.beginPath();
-      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(200, 0, 0, 0.85)';
-      ctx.shadowColor = '#ff0000';
-      ctx.shadowBlur = radius * 1.6;
+      ctx.arc(cx, cy, radius * 2.2, 0, Math.PI * 2);
+      ctx.fillStyle = glow;
       ctx.fill();
 
-      ctx.shadowBlur = radius * 0.9;
-      for (let i = 0; i < 3; i++) {
-        const angle = (i * 120) * Math.PI / 180 + performance.now() / 1200;
-        const tx = cx + Math.cos(angle) * radius * 0.55;
-        const ty = cy + Math.sin(angle) * radius * 0.55;
+      // Iris base — deep crimson radial
+      const irisG = ctx.createRadialGradient(cx, cy, radius * 0.15, cx, cy, radius);
+      irisG.addColorStop(0, '#ff2020');
+      irisG.addColorStop(0.5, '#c00000');
+      irisG.addColorStop(0.85, '#7a0000');
+      irisG.addColorStop(1, '#3a0000');
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.fillStyle = irisG;
+      ctx.fill();
+
+      // Iris fibers (radial thin lines)
+      ctx.strokeStyle = 'rgba(255, 80, 80, 0.55)';
+      ctx.lineWidth = Math.max(0.5, radius * 0.03);
+      for (let i = 0; i < 24; i++) {
+        const a = (i / 24) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos(a) * radius * 0.35, cy + Math.sin(a) * radius * 0.35);
+        ctx.lineTo(cx + Math.cos(a) * radius * 0.95, cy + Math.sin(a) * radius * 0.95);
+        ctx.stroke();
+      }
+
+      // Rotating tomoe
+      const tomoeCount = 3;
+      for (let i = 0; i < tomoeCount; i++) {
+        const baseAngle = (i * Math.PI * 2 / tomoeCount) + t * 0.6;
+        const tx = cx + Math.cos(baseAngle) * radius * 0.6;
+        const ty = cy + Math.sin(baseAngle) * radius * 0.6;
+
+        // Tomoe body (comma shape via bezier)
+        ctx.save();
+        ctx.translate(tx, ty);
+        ctx.rotate(baseAngle + Math.PI / 2);
 
         ctx.beginPath();
-        ctx.arc(tx, ty, radius * 0.28, 0, Math.PI * 2);
+        const r = radius * 0.24;
+        ctx.arc(0, 0, r, 0, Math.PI * 1.4);
+        ctx.arc(r * 0.4, r * 0.4, r * 0.55, Math.PI * 1.4, Math.PI * 2.4);
+        ctx.closePath();
         ctx.fillStyle = '#000';
         ctx.fill();
 
+        // White highlight dot
         ctx.beginPath();
-        ctx.arc(tx - radius * 0.08, ty - radius * 0.08, radius * 0.12, 0, Math.PI * 2);
-        ctx.fillStyle = '#fff';
+        ctx.arc(-r * 0.25, -r * 0.25, r * 0.28, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
         ctx.fill();
+        ctx.restore();
       }
 
+      // Pupil (dilating slightly)
+      const pupilR = radius * (0.26 + Math.sin(t * 3) * 0.02);
       ctx.beginPath();
-      ctx.arc(cx, cy, radius * 0.28, 0, Math.PI * 2);
+      ctx.arc(cx, cy, pupilR, 0, Math.PI * 2);
       ctx.fillStyle = '#000';
       ctx.fill();
+
+      // Pupil inner glow
+      ctx.beginPath();
+      ctx.arc(cx, cy, pupilR * 0.5, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(120, 0, 0, 0.9)';
+      ctx.fill();
+
+      // Outer ring
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255, 60, 60, 0.7)';
+      ctx.lineWidth = Math.max(1, radius * 0.06);
+      ctx.stroke();
+
       ctx.restore();
     }
 
-    function drawWaterDragon(progress, w, h) {
-      const t = performance.now() / 500;
+    /* ============================================================
+       WATER DRAGON
+       ============================================================ */
+    function drawWaterDragon(progress, w, h, now) {
+      const t = now / 1000;
       let alpha = 1;
-      if (progress < 0.2) alpha = progress / 0.2;
-      else if (progress > 0.8) alpha = (1 - progress) / 0.2;
+      if (progress < 0.15) alpha = progress / 0.15;
+      else if (progress > 0.85) alpha = (1 - progress) / 0.15;
       alpha = Math.min(1, Math.max(0, alpha));
 
       const cx = w * 0.5;
-      const cy = h * 0.55;
+      const cy = h * 0.6;
       const scale = w / 1280;
 
       ctx.save();
       ctx.globalAlpha = alpha;
-      ctx.shadowColor = '#00aaff';
-      ctx.shadowBlur = 60 * scale;
-      ctx.lineWidth = 14 * scale;
+      ctx.globalCompositeOperation = 'lighter';
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
-      ctx.beginPath();
-      const bodyPoints = 18;
+      // Build serpentine body points
+      const bodyPoints = 26;
+      const pts = [];
       for (let i = 0; i < bodyPoints; i++) {
         const p = i / (bodyPoints - 1);
-        const angle = t * 0.6 + p * 4;
-        const rx = (60 + p * 180) * scale;
-        const ry = (40 + p * 120) * scale;
+        const angle = t * 1.4 + p * 5.5;
+        const rx = (40 + p * 220) * scale;
+        const ry = (30 + p * 140) * scale;
         const x = cx + Math.cos(angle) * rx;
-        const y = cy - p * 260 * scale + Math.sin(angle * 1.3) * ry * 0.4;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+        const y = cy - p * 300 * scale + Math.sin(angle * 1.3) * ry * 0.45;
+        pts.push({ x, y, r: (18 - p * 12) * scale });
       }
-      const bodyGrad = ctx.createLinearGradient(cx - 200 * scale, cy, cx + 200 * scale, cy - 300 * scale);
-      bodyGrad.addColorStop(0, 'rgba(30, 120, 220, ' + (0.75 * alpha) + ')');
-      bodyGrad.addColorStop(0.5, 'rgba(120, 200, 255, ' + (0.9 * alpha) + ')');
-      bodyGrad.addColorStop(1, 'rgba(20, 80, 180, ' + (0.75 * alpha) + ')');
-      ctx.strokeStyle = bodyGrad;
+
+      // Outer glow pass
+      ctx.shadowColor = '#00b0ff';
+      ctx.shadowBlur = 40 * scale;
+      ctx.strokeStyle = `rgba(60, 160, 255, ${0.45 * alpha})`;
+      ctx.lineWidth = 26 * scale;
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
       ctx.stroke();
 
-      const headAngle = t * 0.6 + 4;
-      const headX = cx + Math.cos(headAngle) * 240 * scale;
-      const headY = cy - 260 * scale + Math.sin(headAngle * 1.3) * 48 * scale;
-      const headR = 55 * scale;
-
-      const headGrad = ctx.createRadialGradient(headX, headY, 4 * scale, headX, headY, headR);
-      headGrad.addColorStop(0, 'rgba(200, 235, 255, ' + (0.95 * alpha) + ')');
-      headGrad.addColorStop(0.6, 'rgba(40, 130, 230, ' + (0.85 * alpha) + ')');
-      headGrad.addColorStop(1, 'rgba(10, 50, 140, ' + (0.6 * alpha) + ')');
-      ctx.beginPath();
-      ctx.arc(headX, headY, headR, 0, Math.PI * 2);
-      ctx.fillStyle = headGrad;
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(200, 240, 255, ' + (0.9 * alpha) + ')';
-      ctx.lineWidth = 5 * scale;
-      ctx.stroke();
-
-      const eyeOffset = 18 * scale;
-      const eyeR = 9 * scale;
-      ctx.shadowBlur = 25 * scale;
-      ctx.fillStyle = 'rgba(255, 255, 220, ' + alpha + ')';
-      ctx.beginPath();
-      ctx.arc(headX - eyeOffset, headY - eyeOffset * 0.6, eyeR, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(headX + eyeOffset, headY - eyeOffset * 0.6, eyeR, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.shadowBlur = 30 * scale;
-      for (let i = 0; i < 12; i++) {
-        const a = t * 1.5 + i;
-        const r = (60 + i * 22) * scale;
-        const sx = cx + Math.cos(a) * r;
-        const sy = cy - 150 * scale + Math.sin(a * 1.7) * r * 0.35;
+      // Main body — layered
+      for (let pass = 0; pass < 3; pass++) {
+        const grad = ctx.createLinearGradient(cx - 250 * scale, cy, cx + 250 * scale, cy - 320 * scale);
+        grad.addColorStop(0, `rgba(20, 80, 180, ${0.9 * alpha})`);
+        grad.addColorStop(0.4, `rgba(90, 180, 255, ${0.95 * alpha})`);
+        grad.addColorStop(0.7, `rgba(180, 230, 255, ${0.95 * alpha})`);
+        grad.addColorStop(1, `rgba(30, 100, 200, ${0.85 * alpha})`);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = (14 - pass * 4) * scale;
         ctx.beginPath();
-        ctx.arc(sx, sy, (3 + Math.random() * 4) * scale, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(180, 230, 255, ' + (0.6 * alpha) + ')';
+        ctx.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+        ctx.stroke();
+      }
+
+      // Scale particles along body
+      for (let i = 0; i < pts.length; i += 2) {
+        const p = pts[i];
+        const n = 4;
+        for (let k = 0; k < n; k++) {
+          const a = (k / n) * Math.PI * 2 + t * 3 + i;
+          const r = p.r * (0.9 + Math.random() * 0.4);
+          const px = p.x + Math.cos(a) * r;
+          const py = p.y + Math.sin(a) * r;
+          ctx.beginPath();
+          ctx.arc(px, py, 1.6 * scale, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(210, 240, 255, ${0.6 * alpha})`;
+          ctx.fill();
+        }
+      }
+
+      // Head
+      const head = pts[pts.length - 1];
+      const headR = 42 * scale;
+
+      // Head aura
+      const auraG = ctx.createRadialGradient(head.x, head.y, headR * 0.3, head.x, head.y, headR * 2);
+      auraG.addColorStop(0, `rgba(180, 230, 255, ${0.6 * alpha})`);
+      auraG.addColorStop(1, 'rgba(20, 80, 180, 0)');
+      ctx.beginPath();
+      ctx.arc(head.x, head.y, headR * 2, 0, Math.PI * 2);
+      ctx.fillStyle = auraG;
+      ctx.fill();
+
+      // Head shape — snout-like
+      ctx.beginPath();
+      ctx.ellipse(head.x, head.y, headR * 1.2, headR, t * 1.5, 0, Math.PI * 2);
+      const headG = ctx.createRadialGradient(head.x - headR * 0.3, head.y - headR * 0.3, headR * 0.1, head.x, head.y, headR * 1.3);
+      headG.addColorStop(0, `rgba(240, 250, 255, ${alpha})`);
+      headG.addColorStop(0.5, `rgba(120, 200, 255, ${0.9 * alpha})`);
+      headG.addColorStop(1, `rgba(20, 80, 180, ${0.8 * alpha})`);
+      ctx.fillStyle = headG;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(220, 245, 255, ${0.9 * alpha})`;
+      ctx.lineWidth = 3 * scale;
+      ctx.stroke();
+
+      // Eyes — glowing
+      ctx.shadowColor = '#ffffff';
+      ctx.shadowBlur = 25 * scale;
+      const eyeOff = headR * 0.5;
+      ctx.beginPath();
+      ctx.arc(head.x - eyeOff * 0.7, head.y - eyeOff * 0.4, headR * 0.18, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 255, 200, ${alpha})`;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(head.x + eyeOff * 0.7, head.y - eyeOff * 0.4, headR * 0.18, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Whiskers / water trails
+      ctx.strokeStyle = `rgba(180, 230, 255, ${0.7 * alpha})`;
+      ctx.lineWidth = 2 * scale;
+      for (let i = -2; i <= 2; i++) {
+        if (i === 0) continue;
+        ctx.beginPath();
+        ctx.moveTo(head.x + i * headR * 0.3, head.y + headR * 0.4);
+        const wobble = Math.sin(t * 4 + i) * 15 * scale;
+        ctx.quadraticCurveTo(
+          head.x + i * headR * 0.6 + wobble, head.y + headR * 1.0,
+          head.x + i * headR * 0.8 + wobble * 1.5, head.y + headR * 1.8
+        );
+        ctx.stroke();
+      }
+
+      // Ambient splash particles
+      for (let i = 0; i < 25; i++) {
+        const a = t * 2 + i * 0.7;
+        const r = (80 + (i * 17) % 200) * scale;
+        const sx = cx + Math.cos(a) * r;
+        const sy = cy - 180 * scale + Math.sin(a * 1.4) * r * 0.5;
+        ctx.beginPath();
+        ctx.arc(sx, sy, (1 + Math.random() * 2.5) * scale, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(180, 230, 255, ${0.5 * alpha})`;
         ctx.fill();
       }
+
       ctx.restore();
     }
 
-    /* ---------- 10. CLEANUP ---------- */
+    /* ============================================================
+       CLEANUP
+       ============================================================ */
     window.addEventListener('beforeunload', () => {
       if (animationFrame) cancelAnimationFrame(animationFrame);
       if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+      Audio.chidoriStop();
+      Audio.rasenganStop();
+      Audio.sharinganStop();
     });
   </script>
 </body>
