@@ -262,7 +262,7 @@
 
   <script type="module">
     /* ============================================================
-       MEDIAPIPE — ES module import (top-level await)
+       MEDIAPIPE — ES module import
        ============================================================ */
     const VERSION = '0.10.12';
     const CDN = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${VERSION}`;
@@ -323,7 +323,7 @@
     const waterDragonText = document.getElementById('waterDragonText');
 
     /* ============================================================
-       AUDIO ENGINE — synthesized SFX (no copyright)
+       AUDIO — synthesized SFX
        ============================================================ */
     const Audio = (() => {
       let ctxA = null;
@@ -337,7 +337,7 @@
         if (ctxA) return;
         try {
           ctxA = new (window.AudioContext || window.webkitAudioContext)();
-          const len = ctxA.sampleRate * 2;
+          const len = ctxA.sampleRate * 3;
           noiseBuffer = ctxA.createBuffer(1, len, ctxA.sampleRate);
           const data = noiseBuffer.getChannelData(0);
           for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
@@ -349,34 +349,32 @@
         if (ctxA && ctxA.state === 'suspended') ctxA.resume();
       }
 
-      /* ----- CHIDORI: filtered noise crackle + high sparkles ----- */
+      /* CHIDORI — filtered noise crackle + sparkle highs */
       function chidoriStart() {
         ensureRunning();
         if (!ctxA || !enabled || chidoriNode) return;
-
         const src = ctxA.createBufferSource();
         src.buffer = noiseBuffer;
         src.loop = true;
 
         const bp = ctxA.createBiquadFilter();
         bp.type = 'bandpass';
-        bp.frequency.value = 3200;
-        bp.Q.value = 1.2;
+        bp.frequency.value = 3400;
+        bp.Q.value = 1.4;
 
         const hp = ctxA.createBiquadFilter();
         hp.type = 'highpass';
-        hp.frequency.value = 800;
+        hp.frequency.value = 900;
 
         const g = ctxA.createGain();
         g.gain.value = 0;
-        g.gain.linearRampToValueAtTime(0.16, ctxA.currentTime + 0.15);
+        g.gain.linearRampToValueAtTime(0.17, ctxA.currentTime + 0.15);
 
-        // LFO for crackle pulsing
         const lfo = ctxA.createOscillator();
         lfo.type = 'square';
-        lfo.frequency.value = 22;
+        lfo.frequency.value = 24;
         const lfoGain = ctxA.createGain();
-        lfoGain.gain.value = 0.05;
+        lfoGain.gain.value = 0.06;
         lfo.connect(lfoGain).connect(g.gain);
         lfo.start();
 
@@ -397,15 +395,13 @@
         chidoriNode = null;
       }
 
-      /* ----- RASENGAN: detuned sine stack + slow LFO wobble ----- */
+      /* RASENGAN — detuned sine stack + wobble */
       function rasenganStart() {
         ensureRunning();
         if (!ctxA || !enabled || rasenganOscs.length) return;
-
         const master = ctxA.createGain();
         master.gain.value = 0;
-        master.gain.linearRampToValueAtTime(0.09, ctxA.currentTime + 0.3);
-
+        master.gain.linearRampToValueAtTime(0.1, ctxA.currentTime + 0.3);
         const freqs = [110, 165, 220, 330, 440];
         freqs.forEach((f, i) => {
           const o = ctxA.createOscillator();
@@ -418,8 +414,6 @@
           o.start();
           rasenganOscs.push(o);
         });
-
-        // Slow wobble LFO
         const lfo = ctxA.createOscillator();
         lfo.type = 'sine';
         lfo.frequency.value = 4.5;
@@ -429,7 +423,6 @@
         rasenganOscs.forEach(o => lfoGain.connect(o.detune));
         lfo.start();
         rasenganLFO = lfo;
-
         master.connect(ctxA.destination);
         rasenganGain = master;
       }
@@ -447,7 +440,7 @@
         }, 300);
       }
 
-      /* ----- SHARINGAN: subtle red drone ----- */
+      /* SHARINGAN — low drone */
       function sharinganStart() {
         ensureRunning();
         if (!ctxA || !enabled || sharinganOsc) return;
@@ -474,46 +467,83 @@
         sharinganOsc = null;
       }
 
-      /* ----- WATER DRAGON: swept saw + noise burst ----- */
+      /* WATER DRAGON — massive layered roar with rushing water */
       function waterDragonRoar() {
         ensureRunning();
         if (!ctxA || !enabled) return;
         const t = ctxA.currentTime;
+        const dur = 2.6;
 
+        /* 1) Low dragon rumble — swept saw */
         const o = ctxA.createOscillator();
         o.type = 'sawtooth';
-        o.frequency.setValueAtTime(80, t);
-        o.frequency.exponentialRampToValueAtTime(320, t + 0.4);
-        o.frequency.exponentialRampToValueAtTime(60, t + 1.4);
+        o.frequency.setValueAtTime(55, t);
+        o.frequency.exponentialRampToValueAtTime(180, t + 0.5);
+        o.frequency.exponentialRampToValueAtTime(45, t + dur);
 
-        const f = ctxA.createBiquadFilter();
-        f.type = 'lowpass';
-        f.frequency.setValueAtTime(600, t);
-        f.frequency.exponentialRampToValueAtTime(2400, t + 0.5);
-        f.frequency.exponentialRampToValueAtTime(400, t + 1.4);
+        const lp = ctxA.createBiquadFilter();
+        lp.type = 'lowpass';
+        lp.frequency.setValueAtTime(400, t);
+        lp.frequency.exponentialRampToValueAtTime(1800, t + 0.4);
+        lp.frequency.exponentialRampToValueAtTime(300, t + dur);
+        lp.Q.value = 2;
 
-        const g = ctxA.createGain();
-        g.gain.setValueAtTime(0, t);
-        g.gain.linearRampToValueAtTime(0.2, t + 0.15);
-        g.gain.linearRampToValueAtTime(0.05, t + 1.0);
-        g.gain.linearRampToValueAtTime(0, t + 1.6);
+        const g1 = ctxA.createGain();
+        g1.gain.setValueAtTime(0, t);
+        g1.gain.linearRampToValueAtTime(0.28, t + 0.2);
+        g1.gain.linearRampToValueAtTime(0.12, t + 1.4);
+        g1.gain.linearRampToValueAtTime(0, t + dur);
 
-        o.connect(f).connect(g).connect(ctxA.destination);
+        o.connect(lp).connect(g1).connect(ctxA.destination);
         o.start(t);
-        o.stop(t + 1.7);
+        o.stop(t + dur + 0.1);
 
-        // Noise splash
+        /* 2) Rushing water — filtered noise with sweeping bandpass */
         const src = ctxA.createBufferSource();
         src.buffer = noiseBuffer;
-        const nf = ctxA.createBiquadFilter();
-        nf.type = 'highpass';
-        nf.frequency.value = 1200;
-        const ng = ctxA.createGain();
-        ng.gain.setValueAtTime(0.15, t);
-        ng.gain.exponentialRampToValueAtTime(0.001, t + 0.9);
-        src.connect(nf).connect(ng).connect(ctxA.destination);
+        src.loop = true;
+
+        const bp = ctxA.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.frequency.setValueAtTime(400, t);
+        bp.frequency.exponentialRampToValueAtTime(2200, t + 0.6);
+        bp.frequency.exponentialRampToValueAtTime(600, t + dur);
+        bp.Q.value = 1.2;
+
+        const g2 = ctxA.createGain();
+        g2.gain.setValueAtTime(0, t);
+        g2.gain.linearRampToValueAtTime(0.22, t + 0.25);
+        g2.gain.linearRampToValueAtTime(0.15, t + 1.2);
+        g2.gain.linearRampToValueAtTime(0, t + dur);
+
+        src.connect(bp).connect(g2).connect(ctxA.destination);
         src.start(t);
-        src.stop(t + 1.0);
+        src.stop(t + dur + 0.1);
+
+        /* 3) Splash burst at start */
+        const splash = ctxA.createBufferSource();
+        splash.buffer = noiseBuffer;
+        const sf = ctxA.createBiquadFilter();
+        sf.type = 'highpass';
+        sf.frequency.value = 1600;
+        const sg = ctxA.createGain();
+        sg.gain.setValueAtTime(0.28, t);
+        sg.gain.exponentialRampToValueAtTime(0.001, t + 0.9);
+        splash.connect(sf).connect(sg).connect(ctxA.destination);
+        splash.start(t);
+        splash.stop(t + 1.0);
+
+        /* 4) Sub-bass impact thump */
+        const sub = ctxA.createOscillator();
+        sub.type = 'sine';
+        sub.frequency.setValueAtTime(90, t);
+        sub.frequency.exponentialRampToValueAtTime(30, t + 0.4);
+        const subG = ctxA.createGain();
+        subG.gain.setValueAtTime(0.35, t);
+        subG.gain.exponentialRampToValueAtTime(0.001, t + 0.7);
+        sub.connect(subG).connect(ctxA.destination);
+        sub.start(t);
+        sub.stop(t + 0.8);
       }
 
       function setEnabled(v) {
@@ -562,7 +592,7 @@
 
     let waterDragonActive = false;
     let waterDragonTimer = 0;
-    const WATER_DRAGON_DURATION = 200;
+    const WATER_DRAGON_DURATION = 240; // ~8 seconds @30fps
     let waterDragonProgress = 0;
 
     let handLandmarker = null;
@@ -570,10 +600,11 @@
     let animationFrame = null;
     let lastVideoTime = -1;
 
-    // Particle pools
-    const sparkParticles = [];   // chidori sparks
-    const ringParticles = [];    // rasengan orbiting
-    const splashParticles = [];  // water dragon splashes
+    // Splash particle pool
+    const splashParticles = [];
+
+    // Hand scale estimation history (smoothing)
+    let handScaleSmooth = null;
 
     /* ============================================================
        CANVAS SIZING
@@ -673,6 +704,18 @@
     }
 
     /* ============================================================
+       HAND SIZE ESTIMATION
+       Returns approx hand length in canvas pixels (wrist → middle tip)
+       ============================================================ */
+    function estimateHandSize(landmarks, w, h) {
+      const wrist = landmarks[0];
+      const midTip = landmarks[12];
+      const dx = (midTip.x - wrist.x) * w;
+      const dy = (midTip.y - wrist.y) * h;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    /* ============================================================
        MAIN LOOP
        ============================================================ */
     function predictLoop() {
@@ -692,7 +735,7 @@
         }
       } catch (e) {}
 
-      /* --- Hands --- */
+      /* Hands */
       leftHandLandmarks = null;
       rightHandLandmarks = null;
       if (handResults && handResults.landmarks && handResults.landmarks.length) {
@@ -708,7 +751,7 @@
         });
       }
 
-      /* --- Blink --- */
+      /* Blink */
       sharinganActive = false;
       if (faceResults && faceResults.faceBlendshapes && faceResults.faceBlendshapes.length) {
         const shapes = faceResults.faceBlendshapes[0].categories;
@@ -717,7 +760,7 @@
         sharinganActive = ((l ? l.score : 0) + (r ? r.score : 0)) / 2 > 0.5;
       }
 
-      /* --- Water dragon sequence --- */
+      /* Water dragon sequence */
       if (leftHandLandmarks && rightHandLandmarks) {
         const dx = leftHandLandmarks[0].x - rightHandLandmarks[0].x;
         const dy = leftHandLandmarks[0].y - rightHandLandmarks[0].y;
@@ -728,7 +771,6 @@
             waterDragonActive = true;
             waterDragonTimer = WATER_DRAGON_DURATION;
             Audio.waterDragonRoar();
-            spawnSplashes(canvas.width, canvas.height);
           }
           handsCloseFrames = 0;
         }
@@ -740,7 +782,7 @@
         if (waterDragonTimer <= 0) { waterDragonActive = false; waterDragonProgress = 0; }
       }
 
-      /* --- Audio triggers --- */
+      /* Audio triggers */
       const chidoriActive = !!leftHandLandmarks;
       if (chidoriActive && !chidoriPrevActive) Audio.chidoriStart();
       if (!chidoriActive && chidoriPrevActive) Audio.chidoriStop();
@@ -755,7 +797,7 @@
       if (!sharinganActive && sharinganPrevActive) Audio.sharinganStop();
       sharinganPrevActive = sharinganActive;
 
-      /* --- Render --- */
+      /* Render */
       const w = canvas.width, h = canvas.height;
       ctx.clearRect(0, 0, w, h);
 
@@ -782,8 +824,7 @@
         updateStatus(waterDragonItem, waterDragonText, false, 'CHARGING');
       } else updateStatus(waterDragonItem, waterDragonText, false, 'IDLE');
 
-      /* --- Update & draw particles --- */
-      updateAndDrawParticles(w, h, now);
+      updateParticles();
 
       animationFrame = requestAnimationFrame(predictLoop);
     }
@@ -794,28 +835,27 @@
     }
 
     /* ============================================================
-       PARTICLE SPAWNERS
+       PARTICLES (water splash)
        ============================================================ */
-    function spawnSplashes(w, h) {
-      for (let i = 0; i < 60; i++) {
+    function spawnSplashes(w, h, count = 80) {
+      for (let i = 0; i < count; i++) {
         splashParticles.push({
-          x: w * 0.5 + (Math.random() - 0.5) * w * 0.4,
-          y: h * 0.5 + (Math.random() - 0.5) * h * 0.3,
-          vx: (Math.random() - 0.5) * 6,
-          vy: -Math.random() * 4 - 1,
+          x: w * 0.5 + (Math.random() - 0.5) * w * 0.5,
+          y: h * 0.55 + (Math.random() - 0.5) * h * 0.35,
+          vx: (Math.random() - 0.5) * 8,
+          vy: -Math.random() * 6 - 1,
           life: 1,
-          decay: 0.012 + Math.random() * 0.01,
-          size: 2 + Math.random() * 4
+          decay: 0.01 + Math.random() * 0.01,
+          size: 2 + Math.random() * 6
         });
       }
     }
 
-    function updateAndDrawParticles(w, h) {
-      // Splashes
+    function updateParticles() {
       for (let i = splashParticles.length - 1; i >= 0; i--) {
         const p = splashParticles[i];
         p.x += p.vx; p.y += p.vy;
-        p.vy += 0.15;
+        p.vy += 0.18;
         p.vx *= 0.98;
         p.life -= p.decay;
         if (p.life <= 0) { splashParticles.splice(i, 1); continue; }
@@ -823,32 +863,35 @@
         ctx.globalCompositeOperation = 'lighter';
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(180, 230, 255, ${p.life * 0.7})`;
+        ctx.fillStyle = `rgba(180, 230, 255, ${p.life * 0.75})`;
         ctx.fill();
         ctx.restore();
       }
     }
 
     /* ============================================================
-       CHIDORI
+       CHIDORI — scaled to hand size, covers whole palm + fingers
        ============================================================ */
     function drawChidori(landmarks, w, h, now) {
       const palm = landmarks[9];
       const x = palm.x * w;
       const y = palm.y * h;
-      const scale = w / 1280;
       const t = now / 1000;
+
+      // Hand size → aura radius covers the whole hand
+      const handSize = estimateHandSize(landmarks, w, h);
+      const auraR = Math.max(handSize * 1.4, 90);
 
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
 
-      // Outer aura (layered radial gradients)
-      for (let layer = 0; layer < 4; layer++) {
-        const r = (60 + layer * 25) * scale;
-        const a = 0.35 - layer * 0.07;
+      // Outer volumetric aura (5 layers)
+      for (let layer = 0; layer < 5; layer++) {
+        const r = auraR + layer * 22;
+        const a = 0.42 - layer * 0.07;
         const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-        g.addColorStop(0, `rgba(200, 245, 255, ${a})`);
-        g.addColorStop(0.6, `rgba(80, 200, 255, ${a * 0.6})`);
+        g.addColorStop(0, `rgba(220, 250, 255, ${a})`);
+        g.addColorStop(0.55, `rgba(80, 200, 255, ${a * 0.65})`);
         g.addColorStop(1, 'rgba(0, 100, 255, 0)');
         ctx.beginPath();
         ctx.arc(x, y, r, 0, Math.PI * 2);
@@ -856,45 +899,44 @@
         ctx.fill();
       }
 
-      // Fractal lightning bolts
+      // Lightning bolts radiating outward
       ctx.lineCap = 'round';
-      const boltCount = 18;
+      const boltCount = 22;
+      const baseLen = auraR * 1.15;
       for (let b = 0; b < boltCount; b++) {
         const baseAngle = (b / boltCount) * Math.PI * 2 + t * 3;
-        const len = (50 + Math.random() * 90) * scale;
-        const startX = x + (Math.random() - 0.5) * 15 * scale;
-        const startY = y + (Math.random() - 0.5) * 15 * scale;
-        const endX = startX + Math.cos(baseAngle + (Math.random() - 0.5) * 0.6) * len;
-        const endY = startY + Math.sin(baseAngle + (Math.random() - 0.5) * 0.6) * len;
+        const len = baseLen * (0.6 + Math.random() * 0.8);
+        const startX = x + (Math.random() - 0.5) * 20;
+        const startY = y + (Math.random() - 0.5) * 20;
+        const endX = startX + Math.cos(baseAngle + (Math.random() - 0.5) * 0.7) * len;
+        const endY = startY + Math.sin(baseAngle + (Math.random() - 0.5) * 0.7) * len;
 
-        // Main bolt
         ctx.beginPath();
         ctx.moveTo(startX, startY);
-        let px = startX, py = startY;
-        const segs = 7;
+        const segs = 8;
         for (let s = 1; s <= segs; s++) {
           const tt = s / segs;
-          const jx = startX + (endX - startX) * tt + (Math.random() - 0.5) * 25 * scale;
-          const jy = startY + (endY - startY) * tt + (Math.random() - 0.5) * 25 * scale;
+          const jx = startX + (endX - startX) * tt + (Math.random() - 0.5) * 30;
+          const jy = startY + (endY - startY) * tt + (Math.random() - 0.5) * 30;
           ctx.lineTo(jx, jy);
-          px = jx; py = jy;
         }
         ctx.strokeStyle = `rgba(220, 250, 255, ${0.7 + Math.random() * 0.3})`;
-        ctx.lineWidth = (1.5 + Math.random() * 2.5) * scale;
+        ctx.lineWidth = 1.8 + Math.random() * 3.2;
         ctx.shadowColor = '#00e6ff';
-        ctx.shadowBlur = 20 * scale;
+        ctx.shadowBlur = 25;
         ctx.stroke();
       }
 
-      // Core
-      ctx.shadowBlur = 60 * scale;
+      // Bright core (covers palm)
+      ctx.shadowBlur = 90;
       ctx.shadowColor = '#aaefff';
-      const coreG = ctx.createRadialGradient(x, y, 0, x, y, 22 * scale);
-      coreG.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
-      coreG.addColorStop(0.4, 'rgba(180, 240, 255, 0.7)');
+      const coreG = ctx.createRadialGradient(x, y, 0, x, y, handSize * 0.9);
+      coreG.addColorStop(0, 'rgba(255, 255, 255, 1)');
+      coreG.addColorStop(0.35, 'rgba(200, 245, 255, 0.85)');
+      coreG.addColorStop(0.7, 'rgba(120, 220, 255, 0.4)');
       coreG.addColorStop(1, 'rgba(0, 180, 255, 0)');
       ctx.beginPath();
-      ctx.arc(x, y, 22 * scale, 0, Math.PI * 2);
+      ctx.arc(x, y, handSize * 0.9, 0, Math.PI * 2);
       ctx.fillStyle = coreG;
       ctx.fill();
 
@@ -902,23 +944,24 @@
     }
 
     /* ============================================================
-       RASENGAN
+       RASENGAN — scaled to hand size (palm-sized sphere)
        ============================================================ */
     function drawRasengan(landmarks, w, h, now) {
       const palm = landmarks[9];
       const x = palm.x * w;
       const y = palm.y * h;
-      const scale = w / 1280;
-      const R = 48 * scale;
       const t = now / 1000;
+
+      const handSize = estimateHandSize(landmarks, w, h);
+      const R = Math.max(handSize * 0.75, 55);
 
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
 
-      // Volumetric outer shell (multiple gradient layers)
+      // Volumetric outer shell (5 layers)
       for (let i = 4; i >= 0; i--) {
-        const r = R + i * 8 * scale;
-        const a = 0.18 - i * 0.03;
+        const r = R + i * 14;
+        const a = 0.2 - i * 0.035;
         const g = ctx.createRadialGradient(x, y, R * 0.3, x, y, r);
         g.addColorStop(0, `rgba(200, 235, 255, ${a})`);
         g.addColorStop(0.7, `rgba(60, 140, 255, ${a * 0.8})`);
@@ -929,10 +972,10 @@
         ctx.fill();
       }
 
-      // Main sphere
+      // Sphere base
       const sphereG = ctx.createRadialGradient(x - R * 0.35, y - R * 0.35, R * 0.1, x, y, R);
       sphereG.addColorStop(0, '#ffffff');
-      sphereG.addColorStop(0.25, '#cfeaff');
+      sphereG.addColorStop(0.25, '#dcefff');
       sphereG.addColorStop(0.55, '#2f8fff');
       sphereG.addColorStop(0.85, '#0a4ed8');
       sphereG.addColorStop(1, '#021a5c');
@@ -941,44 +984,44 @@
       ctx.fillStyle = sphereG;
       ctx.fill();
 
-      // Spiral arm particles (rotating)
-      const arms = 4;
-      const particlesPerArm = 14;
+      // Spiral particle arms (chakra swirl)
+      const arms = 5;
+      const particlesPerArm = 18;
       for (let a = 0; a < arms; a++) {
         for (let p = 0; p < particlesPerArm; p++) {
-          const angle = t * 4 + a * (Math.PI * 2 / arms) + p * 0.28;
-          const radius = R * (0.15 + p / particlesPerArm * 0.8);
+          const angle = t * 5 + a * (Math.PI * 2 / arms) + p * 0.26;
+          const radius = R * (0.12 + p / particlesPerArm * 0.85);
           const px = x + Math.cos(angle) * radius;
           const py = y + Math.sin(angle) * radius;
-          const pSize = (3 - p / particlesPerArm * 2) * scale + 1;
-          const alpha = 0.9 - p / particlesPerArm * 0.6;
+          const pSize = (R * 0.09) * (1 - p / particlesPerArm * 0.7) + 1;
+          const alpha = 0.95 - p / particlesPerArm * 0.5;
           ctx.beginPath();
           ctx.arc(px, py, pSize, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(230, 250, 255, ${alpha})`;
+          ctx.fillStyle = `rgba(235, 252, 255, ${alpha})`;
           ctx.fill();
         }
       }
 
       // Bright core
       ctx.shadowColor = '#cfefff';
-      ctx.shadowBlur = 80 * scale;
-      const coreG = ctx.createRadialGradient(x, y, 0, x, y, R * 0.35);
+      ctx.shadowBlur = 110;
+      const coreG = ctx.createRadialGradient(x, y, 0, x, y, R * 0.38);
       coreG.addColorStop(0, 'rgba(255, 255, 255, 1)');
-      coreG.addColorStop(0.5, 'rgba(180, 230, 255, 0.8)');
+      coreG.addColorStop(0.5, 'rgba(180, 230, 255, 0.85)');
       coreG.addColorStop(1, 'rgba(100, 180, 255, 0)');
       ctx.beginPath();
-      ctx.arc(x, y, R * 0.35, 0, Math.PI * 2);
+      ctx.arc(x, y, R * 0.38, 0, Math.PI * 2);
       ctx.fillStyle = coreG;
       ctx.fill();
 
-      // Outer ring arcs (aesthetic)
-      ctx.shadowBlur = 20 * scale;
-      ctx.lineWidth = 1.5 * scale;
+      // Outer rotating arcs
+      ctx.shadowBlur = 30;
+      ctx.lineWidth = 2.5;
       for (let i = 0; i < 3; i++) {
-        const ringR = R * (1.15 + i * 0.12);
+        const ringR = R * (1.15 + i * 0.15);
         ctx.beginPath();
-        ctx.arc(x, y, ringR, t * 2 + i, t * 2 + i + Math.PI * 1.4);
-        ctx.strokeStyle = `rgba(180, 230, 255, ${0.5 - i * 0.1})`;
+        ctx.arc(x, y, ringR, t * 2 + i * 1.2, t * 2 + i * 1.2 + Math.PI * 1.4);
+        ctx.strokeStyle = `rgba(190, 235, 255, ${0.55 - i * 0.12})`;
         ctx.stroke();
       }
 
@@ -986,7 +1029,7 @@
     }
 
     /* ============================================================
-       SHARINGAN
+       SHARINGAN — scaled to actual eye size
        ============================================================ */
     function drawSharinganOnFace(landmarks, w, h) {
       const lx = (landmarks[33].x + landmarks[133].x) / 2;
@@ -994,14 +1037,23 @@
       const rx = (landmarks[362].x + landmarks[263].x) / 2;
       const ry = (landmarks[362].y + landmarks[263].y) / 2;
 
-      // Eye radius estimated from face geometry
-      const dxEye = (lx - rx) * w;
-      const dyEye = (ly - ry) * h;
-      const eyeDist = Math.sqrt(dxEye * dxEye + dyEye * dyEye);
-      const radius = Math.max(12, eyeDist * 0.24);
+      // Eye corner-to-corner width (true eye size, not inter-eye distance)
+      // Left eye: outer 33, inner 133. Right eye: inner 362, outer 263.
+      const lEyeWidth = Math.hypot(
+        (landmarks[33].x - landmarks[133].x) * w,
+        (landmarks[33].y - landmarks[133].y) * h
+      );
+      const rEyeWidth = Math.hypot(
+        (landmarks[362].x - landmarks[263].x) * w,
+        (landmarks[362].y - landmarks[263].y) * h
+      );
 
-      drawSharinganAt(lx * w, ly * h, radius);
-      drawSharinganAt(rx * w, ry * h, radius);
+      // Radius scaled to fill the eye socket
+      const lRadius = Math.max(14, lEyeWidth * 0.55);
+      const rRadius = Math.max(14, rEyeWidth * 0.55);
+
+      drawSharinganAt(lx * w, ly * h, lRadius);
+      drawSharinganAt(rx * w, ry * h, rRadius);
     }
 
     function drawSharinganAt(cx, cy, radius) {
@@ -1011,16 +1063,16 @@
       ctx.globalCompositeOperation = 'lighter';
 
       // Outer glow
-      const glow = ctx.createRadialGradient(cx, cy, radius * 0.6, cx, cy, radius * 2.2);
-      glow.addColorStop(0, 'rgba(255, 30, 30, 0.5)');
-      glow.addColorStop(0.5, 'rgba(180, 0, 0, 0.25)');
+      const glow = ctx.createRadialGradient(cx, cy, radius * 0.6, cx, cy, radius * 2.4);
+      glow.addColorStop(0, 'rgba(255, 30, 30, 0.55)');
+      glow.addColorStop(0.5, 'rgba(180, 0, 0, 0.28)');
       glow.addColorStop(1, 'rgba(120, 0, 0, 0)');
       ctx.beginPath();
-      ctx.arc(cx, cy, radius * 2.2, 0, Math.PI * 2);
+      ctx.arc(cx, cy, radius * 2.4, 0, Math.PI * 2);
       ctx.fillStyle = glow;
       ctx.fill();
 
-      // Iris base — deep crimson radial
+      // Iris base
       const irisG = ctx.createRadialGradient(cx, cy, radius * 0.15, cx, cy, radius);
       irisG.addColorStop(0, '#ff2020');
       irisG.addColorStop(0.5, '#c00000');
@@ -1031,38 +1083,35 @@
       ctx.fillStyle = irisG;
       ctx.fill();
 
-      // Iris fibers (radial thin lines)
-      ctx.strokeStyle = 'rgba(255, 80, 80, 0.55)';
-      ctx.lineWidth = Math.max(0.5, radius * 0.03);
-      for (let i = 0; i < 24; i++) {
-        const a = (i / 24) * Math.PI * 2;
+      // Iris fibers
+      ctx.strokeStyle = 'rgba(255, 80, 80, 0.6)';
+      ctx.lineWidth = Math.max(0.6, radius * 0.035);
+      for (let i = 0; i < 32; i++) {
+        const a = (i / 32) * Math.PI * 2;
         ctx.beginPath();
-        ctx.moveTo(cx + Math.cos(a) * radius * 0.35, cy + Math.sin(a) * radius * 0.35);
+        ctx.moveTo(cx + Math.cos(a) * radius * 0.32, cy + Math.sin(a) * radius * 0.32);
         ctx.lineTo(cx + Math.cos(a) * radius * 0.95, cy + Math.sin(a) * radius * 0.95);
         ctx.stroke();
       }
 
       // Rotating tomoe
-      const tomoeCount = 3;
-      for (let i = 0; i < tomoeCount; i++) {
-        const baseAngle = (i * Math.PI * 2 / tomoeCount) + t * 0.6;
+      for (let i = 0; i < 3; i++) {
+        const baseAngle = (i * Math.PI * 2 / 3) + t * 0.7;
         const tx = cx + Math.cos(baseAngle) * radius * 0.6;
         const ty = cy + Math.sin(baseAngle) * radius * 0.6;
 
-        // Tomoe body (comma shape via bezier)
         ctx.save();
         ctx.translate(tx, ty);
         ctx.rotate(baseAngle + Math.PI / 2);
 
         ctx.beginPath();
-        const r = radius * 0.24;
+        const r = radius * 0.26;
         ctx.arc(0, 0, r, 0, Math.PI * 1.4);
         ctx.arc(r * 0.4, r * 0.4, r * 0.55, Math.PI * 1.4, Math.PI * 2.4);
         ctx.closePath();
         ctx.fillStyle = '#000';
         ctx.fill();
 
-        // White highlight dot
         ctx.beginPath();
         ctx.arc(-r * 0.25, -r * 0.25, r * 0.28, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
@@ -1070,14 +1119,13 @@
         ctx.restore();
       }
 
-      // Pupil (dilating slightly)
+      // Pupil (dilating)
       const pupilR = radius * (0.26 + Math.sin(t * 3) * 0.02);
       ctx.beginPath();
       ctx.arc(cx, cy, pupilR, 0, Math.PI * 2);
       ctx.fillStyle = '#000';
       ctx.fill();
 
-      // Pupil inner glow
       ctx.beginPath();
       ctx.arc(cx, cy, pupilR * 0.5, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(120, 0, 0, 0.9)';
@@ -1086,26 +1134,41 @@
       // Outer ring
       ctx.beginPath();
       ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(255, 60, 60, 0.7)';
-      ctx.lineWidth = Math.max(1, radius * 0.06);
+      ctx.strokeStyle = 'rgba(255, 60, 60, 0.75)';
+      ctx.lineWidth = Math.max(1.2, radius * 0.07);
       ctx.stroke();
 
       ctx.restore();
     }
 
     /* ============================================================
-       WATER DRAGON
+       WATER DRAGON — full dragon silhouette
        ============================================================ */
     function drawWaterDragon(progress, w, h, now) {
       const t = now / 1000;
       let alpha = 1;
-      if (progress < 0.15) alpha = progress / 0.15;
-      else if (progress > 0.85) alpha = (1 - progress) / 0.15;
+      if (progress < 0.12) alpha = progress / 0.12;
+      else if (progress > 0.88) alpha = (1 - progress) / 0.12;
       alpha = Math.min(1, Math.max(0, alpha));
 
-      const cx = w * 0.5;
-      const cy = h * 0.6;
+      // Dragon traverses horizontally with a slight arc
+      const travel = progress;
+      const baseX = w * (0.15 + travel * 0.7);
+      const baseY = h * (0.55 - Math.sin(travel * Math.PI) * 0.15);
       const scale = w / 1280;
+
+      // Spawn splashes along the wake
+      if (Math.random() < 0.6) {
+        splashParticles.push({
+          x: baseX + (Math.random() - 0.5) * 200 * scale,
+          y: baseY + (Math.random() - 0.3) * 100 * scale,
+          vx: (Math.random() - 0.5) * 5,
+          vy: -Math.random() * 5 - 2,
+          life: 1,
+          decay: 0.02 + Math.random() * 0.015,
+          size: 2 + Math.random() * 5
+        });
+      }
 
       ctx.save();
       ctx.globalAlpha = alpha;
@@ -1113,122 +1176,246 @@
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
-      // Build serpentine body points
-      const bodyPoints = 26;
+      /* ---------- Serpentine body ---------- */
+      const bodyPoints = 32;
       const pts = [];
       for (let i = 0; i < bodyPoints; i++) {
         const p = i / (bodyPoints - 1);
-        const angle = t * 1.4 + p * 5.5;
-        const rx = (40 + p * 220) * scale;
-        const ry = (30 + p * 140) * scale;
-        const x = cx + Math.cos(angle) * rx;
-        const y = cy - p * 300 * scale + Math.sin(angle * 1.3) * ry * 0.45;
-        pts.push({ x, y, r: (18 - p * 12) * scale });
+        const angle = t * 1.2 + p * 6;
+        const arcX = Math.cos(angle) * (30 + p * 60) * scale;
+        const arcY = Math.sin(angle * 1.4) * (25 + p * 40) * scale;
+        const x = baseX - p * 480 * scale + arcX;
+        const y = baseY + arcY - Math.sin(p * Math.PI) * 40 * scale;
+        pts.push({ x, y, r: (22 - p * 14) * scale });
       }
 
-      // Outer glow pass
+      // Outer glow underlay
       ctx.shadowColor = '#00b0ff';
-      ctx.shadowBlur = 40 * scale;
-      ctx.strokeStyle = `rgba(60, 160, 255, ${0.45 * alpha})`;
-      ctx.lineWidth = 26 * scale;
+      ctx.shadowBlur = 60 * scale;
+      ctx.strokeStyle = `rgba(50, 140, 240, ${0.5 * alpha})`;
+      ctx.lineWidth = 32 * scale;
       ctx.beginPath();
       ctx.moveTo(pts[0].x, pts[0].y);
       for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
       ctx.stroke();
 
-      // Main body — layered
+      // Body — 3-layer gradient
       for (let pass = 0; pass < 3; pass++) {
-        const grad = ctx.createLinearGradient(cx - 250 * scale, cy, cx + 250 * scale, cy - 320 * scale);
-        grad.addColorStop(0, `rgba(20, 80, 180, ${0.9 * alpha})`);
-        grad.addColorStop(0.4, `rgba(90, 180, 255, ${0.95 * alpha})`);
+        const grad = ctx.createLinearGradient(baseX - 500 * scale, baseY, baseX, baseY - 200 * scale);
+        grad.addColorStop(0, `rgba(10, 60, 150, ${0.85 * alpha})`);
+        grad.addColorStop(0.35, `rgba(60, 150, 240, ${0.95 * alpha})`);
         grad.addColorStop(0.7, `rgba(180, 230, 255, ${0.95 * alpha})`);
-        grad.addColorStop(1, `rgba(30, 100, 200, ${0.85 * alpha})`);
+        grad.addColorStop(1, `rgba(40, 110, 200, ${0.9 * alpha})`);
         ctx.strokeStyle = grad;
-        ctx.lineWidth = (14 - pass * 4) * scale;
+        ctx.lineWidth = (22 - pass * 6) * scale;
         ctx.beginPath();
         ctx.moveTo(pts[0].x, pts[0].y);
         for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
         ctx.stroke();
       }
 
-      // Scale particles along body
-      for (let i = 0; i < pts.length; i += 2) {
+      // Scales
+      for (let i = 0; i < pts.length; i++) {
         const p = pts[i];
-        const n = 4;
-        for (let k = 0; k < n; k++) {
-          const a = (k / n) * Math.PI * 2 + t * 3 + i;
-          const r = p.r * (0.9 + Math.random() * 0.4);
+        for (let k = 0; k < 5; k++) {
+          const a = (k / 5) * Math.PI * 2 + t * 3 + i * 0.5;
+          const r = p.r * (1 + Math.sin(a * 2 + t * 4) * 0.15);
           const px = p.x + Math.cos(a) * r;
           const py = p.y + Math.sin(a) * r;
           ctx.beginPath();
-          ctx.arc(px, py, 1.6 * scale, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(210, 240, 255, ${0.6 * alpha})`;
+          ctx.arc(px, py, 1.8 * scale, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(220, 245, 255, ${0.6 * alpha})`;
           ctx.fill();
         }
       }
 
-      // Head
+      /* ---------- Dorsal spikes along the body ---------- */
+      ctx.fillStyle = `rgba(180, 230, 255, ${0.8 * alpha})`;
+      for (let i = 2; i < pts.length - 2; i += 3) {
+        const p = pts[i];
+        const prev = pts[i - 1];
+        const dx = p.x - prev.x;
+        const dy = p.y - prev.y;
+        const len = Math.hypot(dx, dy) || 1;
+        const nx = -dy / len;
+        const ny = dx / len;
+        const spikeLen = p.r * 1.2;
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(p.x + nx * spikeLen, p.y + ny * spikeLen);
+        ctx.lineTo(prev.x, prev.y);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      /* ---------- Four clawed limbs ---------- */
+      const legIndices = [8, 14, 20, 26];
+      legIndices.forEach((idx, li) => {
+        if (idx >= pts.length) return;
+        const p = pts[idx];
+        const swing = Math.sin(t * 3 + li * 1.3) * 30 * scale;
+        const legLen = 70 * scale;
+        const dirY = li % 2 === 0 ? 1 : -1;
+
+        const kneeX = p.x + swing * 0.5;
+        const kneeY = p.y + dirY * legLen * 0.5;
+        const footX = p.x + swing;
+        const footY = p.y + dirY * legLen;
+
+        // Upper leg
+        ctx.strokeStyle = `rgba(120, 200, 255, ${0.85 * alpha})`;
+        ctx.lineWidth = 10 * scale;
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.quadraticCurveTo(kneeX, kneeY, footX, footY);
+        ctx.stroke();
+
+        // Claws (3 talons)
+        ctx.strokeStyle = `rgba(240, 250, 255, ${0.95 * alpha})`;
+        ctx.lineWidth = 3 * scale;
+        for (let c = -1; c <= 1; c++) {
+          ctx.beginPath();
+          ctx.moveTo(footX, footY);
+          ctx.lineTo(footX + c * 12 * scale, footY + dirY * 20 * scale);
+          ctx.stroke();
+        }
+      });
+
+      /* ---------- Head ---------- */
       const head = pts[pts.length - 1];
-      const headR = 42 * scale;
+      const neck = pts[pts.length - 3];
+      const angle = Math.atan2(head.y - neck.y, head.x - neck.x);
+      const headR = 60 * scale;
+
+      ctx.save();
+      ctx.translate(head.x, head.y);
+      ctx.rotate(angle);
 
       // Head aura
-      const auraG = ctx.createRadialGradient(head.x, head.y, headR * 0.3, head.x, head.y, headR * 2);
-      auraG.addColorStop(0, `rgba(180, 230, 255, ${0.6 * alpha})`);
+      const auraG = ctx.createRadialGradient(0, 0, headR * 0.4, 0, 0, headR * 2.2);
+      auraG.addColorStop(0, `rgba(200, 240, 255, ${0.7 * alpha})`);
       auraG.addColorStop(1, 'rgba(20, 80, 180, 0)');
       ctx.beginPath();
-      ctx.arc(head.x, head.y, headR * 2, 0, Math.PI * 2);
+      ctx.arc(0, 0, headR * 2.2, 0, Math.PI * 2);
       ctx.fillStyle = auraG;
       ctx.fill();
 
-      // Head shape — snout-like
+      // Elongated snout — proper dragon head shape
       ctx.beginPath();
-      ctx.ellipse(head.x, head.y, headR * 1.2, headR, t * 1.5, 0, Math.PI * 2);
-      const headG = ctx.createRadialGradient(head.x - headR * 0.3, head.y - headR * 0.3, headR * 0.1, head.x, head.y, headR * 1.3);
-      headG.addColorStop(0, `rgba(240, 250, 255, ${alpha})`);
-      headG.addColorStop(0.5, `rgba(120, 200, 255, ${0.9 * alpha})`);
-      headG.addColorStop(1, `rgba(20, 80, 180, ${0.8 * alpha})`);
+      ctx.moveTo(-headR * 0.4, -headR * 0.9);
+      ctx.quadraticCurveTo(headR * 0.3, -headR * 1.1, headR * 1.6, -headR * 0.3);
+      ctx.quadraticCurveTo(headR * 1.9, 0, headR * 1.6, headR * 0.3);
+      ctx.quadraticCurveTo(headR * 0.3, headR * 1.1, -headR * 0.4, headR * 0.9);
+      ctx.quadraticCurveTo(-headR * 0.9, 0, -headR * 0.4, -headR * 0.9);
+      ctx.closePath();
+
+      const headG = ctx.createRadialGradient(-headR * 0.3, -headR * 0.3, headR * 0.1, 0, 0, headR * 1.8);
+      headG.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
+      headG.addColorStop(0.4, `rgba(150, 220, 255, ${0.95 * alpha})`);
+      headG.addColorStop(1, `rgba(20, 80, 180, ${0.9 * alpha})`);
       ctx.fillStyle = headG;
       ctx.fill();
-      ctx.strokeStyle = `rgba(220, 245, 255, ${0.9 * alpha})`;
+
+      ctx.strokeStyle = `rgba(220, 245, 255, ${0.95 * alpha})`;
       ctx.lineWidth = 3 * scale;
       ctx.stroke();
 
-      // Eyes — glowing
-      ctx.shadowColor = '#ffffff';
-      ctx.shadowBlur = 25 * scale;
-      const eyeOff = headR * 0.5;
+      // Jaw line
       ctx.beginPath();
-      ctx.arc(head.x - eyeOff * 0.7, head.y - eyeOff * 0.4, headR * 0.18, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255, 255, 200, ${alpha})`;
+      ctx.moveTo(headR * 0.2, headR * 0.35);
+      ctx.quadraticCurveTo(headR * 1.0, headR * 0.55, headR * 1.55, headR * 0.25);
+      ctx.strokeStyle = `rgba(30, 90, 180, ${0.9 * alpha})`;
+      ctx.lineWidth = 2 * scale;
+      ctx.stroke();
+
+      // Teeth
+      ctx.fillStyle = `rgba(255, 255, 245, ${alpha})`;
+      for (let i = 0; i < 5; i++) {
+        const tx = headR * (0.55 + i * 0.22);
+        const ty = headR * (0.4 - i * 0.02);
+        ctx.beginPath();
+        ctx.moveTo(tx, ty);
+        ctx.lineTo(tx + 5 * scale, ty + 6 * scale);
+        ctx.lineTo(tx + 10 * scale, ty + 1 * scale);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Eye — glowing slit
+      ctx.shadowColor = '#ffff99';
+      ctx.shadowBlur = 30 * scale;
+      ctx.fillStyle = `rgba(255, 250, 180, ${alpha})`;
+      ctx.beginPath();
+      ctx.ellipse(headR * 0.55, -headR * 0.25, headR * 0.22, headR * 0.14, -0.2, 0, Math.PI * 2);
       ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`;
       ctx.beginPath();
-      ctx.arc(head.x + eyeOff * 0.7, head.y - eyeOff * 0.4, headR * 0.18, 0, Math.PI * 2);
+      ctx.ellipse(headR * 0.55, -headR * 0.25, headR * 0.06, headR * 0.13, -0.2, 0, Math.PI * 2);
       ctx.fill();
 
-      // Whiskers / water trails
-      ctx.strokeStyle = `rgba(180, 230, 255, ${0.7 * alpha})`;
-      ctx.lineWidth = 2 * scale;
-      for (let i = -2; i <= 2; i++) {
+      // Nostrils
+      ctx.fillStyle = `rgba(20, 60, 120, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(headR * 1.4, -headR * 0.1, headR * 0.06, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(headR * 1.4, headR * 0.1, headR * 0.06, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Horns (2 swept back)
+      ctx.strokeStyle = `rgba(240, 250, 255, ${0.95 * alpha})`;
+      ctx.lineWidth = 5 * scale;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-headR * 0.2, -headR * 0.85);
+      ctx.quadraticCurveTo(-headR * 1.0, -headR * 1.4, -headR * 1.8, -headR * 1.0);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(headR * 0.1, -headR * 0.95);
+      ctx.quadraticCurveTo(-headR * 0.6, -headR * 1.6, -headR * 1.4, -headR * 1.4);
+      ctx.stroke();
+
+      // Whiskers (long flowing)
+      ctx.strokeStyle = `rgba(180, 230, 255, ${0.85 * alpha})`;
+      ctx.lineWidth = 2.5 * scale;
+      for (let i = -1; i <= 1; i++) {
         if (i === 0) continue;
         ctx.beginPath();
-        ctx.moveTo(head.x + i * headR * 0.3, head.y + headR * 0.4);
-        const wobble = Math.sin(t * 4 + i) * 15 * scale;
+        ctx.moveTo(headR * 1.5, i * headR * 0.2);
+        const wave = Math.sin(t * 5 + i) * 25 * scale;
         ctx.quadraticCurveTo(
-          head.x + i * headR * 0.6 + wobble, head.y + headR * 1.0,
-          head.x + i * headR * 0.8 + wobble * 1.5, head.y + headR * 1.8
+          headR * 2.6, i * headR * 0.6 + wave,
+          headR * 3.8, i * headR * 1.0 + wave * 1.5
         );
         ctx.stroke();
       }
 
-      // Ambient splash particles
-      for (let i = 0; i < 25; i++) {
-        const a = t * 2 + i * 0.7;
-        const r = (80 + (i * 17) % 200) * scale;
-        const sx = cx + Math.cos(a) * r;
-        const sy = cy - 180 * scale + Math.sin(a * 1.4) * r * 0.5;
+      // Mane (flowing back)
+      ctx.fillStyle = `rgba(140, 210, 255, ${0.75 * alpha})`;
+      for (let i = 0; i < 6; i++) {
+        const mx = -headR * (0.5 + i * 0.4);
+        const my = (i % 2 === 0 ? -1 : 1) * headR * (0.5 + i * 0.15);
+        const wave = Math.sin(t * 4 + i) * 8 * scale;
         ctx.beginPath();
-        ctx.arc(sx, sy, (1 + Math.random() * 2.5) * scale, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(180, 230, 255, ${0.5 * alpha})`;
+        ctx.moveTo(-headR * 0.3, 0);
+        ctx.quadraticCurveTo(mx, my + wave, mx - 20 * scale, my * 1.3 + wave);
+        ctx.quadraticCurveTo(mx + 5 * scale, my * 0.7, -headR * 0.3, headR * 0.15 * (i % 2 === 0 ? -1 : 1));
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      ctx.restore();
+
+      // Ambient water surge particles around dragon
+      for (let i = 0; i < 30; i++) {
+        const a = t * 3 + i * 0.7;
+        const r = (60 + (i * 23) % 200) * scale;
+        const sx = baseX + Math.cos(a) * r;
+        const sy = baseY + Math.sin(a * 1.4) * r * 0.5;
+        ctx.beginPath();
+        ctx.arc(sx, sy, (1.5 + Math.random() * 2.5) * scale, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(180, 230, 255, ${0.55 * alpha})`;
         ctx.fill();
       }
 
