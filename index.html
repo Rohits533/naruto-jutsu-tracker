@@ -334,7 +334,7 @@
         FPS <span class="hud-val" id="hudFps">60</span> ·
         HANDS <span class="hud-val" id="hudHands">0</span> ·
         FACE <span class="hud-val" id="hudFace">OFF</span> ·
-        MOUTH <span class="hud-val" id="hudMouth">0</span>
+        BLINK <span class="hud-val" id="hudBlink">0</span>
       </div>
 
       <div class="hud-controls">
@@ -361,13 +361,11 @@
           <span class="color-swatch" id="swatchChidori" style="color:#00e6ff;background:#00e6ff;"></span>
           <div class="jutsu-name"><span>⚡ CHIDORI</span></div>
           <div class="jutsu-status"><span class="status-dot"></span><span id="txChidori">RAISE LEFT HAND</span></div>
-          <div class="easy-hint">Click to change color</div>
         </div>
         <div class="jutsu-item" id="stRasengan">
           <span class="color-swatch" id="swatchRasengan" style="color:#2f8fff;background:#2f8fff;"></span>
           <div class="jutsu-name"><span>🌀 RASENGAN</span></div>
           <div class="jutsu-status"><span class="status-dot"></span><span id="txRasengan">RAISE RIGHT HAND</span></div>
-          <div class="easy-hint">Click to change color</div>
         </div>
         <div class="jutsu-item" id="stWaterDragon">
           <span class="color-swatch" id="swatchWaterDragon" style="color:#4aa8ff;background:#4aa8ff;"></span>
@@ -396,12 +394,12 @@
         <div class="jutsu-item" id="stSharingan">
           <span class="color-swatch" id="swatchSharingan" style="color:#ff2020;background:#ff2020;"></span>
           <div class="jutsu-name"><span>👁️ SHARINGAN</span></div>
-          <div class="jutsu-status"><span class="status-dot"></span><span id="txSharingan">BLINK</span></div>
+          <div class="jutsu-status"><span class="status-dot"></span><span id="txSharingan">BLINK ×2</span></div>
         </div>
         <div class="jutsu-item" id="stAmaterasu">
           <span class="color-swatch" id="swatchAmaterasu" style="color:#ff2200;background:#ff2200;"></span>
           <div class="jutsu-name"><span>🌑 AMATERASU</span></div>
-          <div class="jutsu-status"><span class="status-dot"></span><span id="txAmaterasu">BLINK + LOOK UP</span></div>
+          <div class="jutsu-status"><span class="status-dot"></span><span id="txAmaterasu">BLINK ×4</span></div>
         </div>
         <div class="jutsu-item" id="stMist">
           <span class="color-swatch" id="swatchMist" style="color:#aaccdd;background:#aaccdd;"></span>
@@ -477,7 +475,7 @@
     const hudFps = document.getElementById('hudFps');
     const hudHands = document.getElementById('hudHands');
     const hudFace = document.getElementById('hudFace');
-    const hudMouth = document.getElementById('hudMouth');
+    const hudBlink = document.getElementById('hudBlink');
 
     const statusEls = {
       chidori:      { item: document.getElementById('stChidori'),       text: document.getElementById('txChidori') },
@@ -508,7 +506,7 @@
         { name: 'Tailed Beast',   core: '#ffe0e0', mid: '#ff8888', edge: '#cc2222', glow: '#ff5555' }
       ],
       sharingan: [
-        { name: 'Crimson',        core: '#ff2020', mid: '#c00000', edge: '#7a0000', glow: '#ff3333' },
+        { name: 'Sharingan',      core: '#ff2020', mid: '#c00000', edge: '#7a0000', glow: '#ff3333' },
         { name: 'Mangekyō',       core: '#ff0044', mid: '#990033', edge: '#550000', glow: '#ff2266' },
         { name: 'Rinnegan',       core: '#cc99ff', mid: '#7744cc', edge: '#331177', glow: '#9955ff' }
       ],
@@ -712,22 +710,22 @@
       function waterDragonRoar() {
         ensureRunning();
         if (!ctxA || !enabled) return;
-        const t = ctxA.currentTime, dur = 2.6;
+        const t = ctxA.currentTime, dur = 3.2;
         const o = ctxA.createOscillator();
         o.type = 'sawtooth';
-        o.frequency.setValueAtTime(55, t);
-        o.frequency.exponentialRampToValueAtTime(180, t + 0.5);
-        o.frequency.exponentialRampToValueAtTime(45, t + dur);
+        o.frequency.setValueAtTime(45, t);
+        o.frequency.exponentialRampToValueAtTime(220, t + 0.6);
+        o.frequency.exponentialRampToValueAtTime(40, t + dur);
         const lp = ctxA.createBiquadFilter();
         lp.type = 'lowpass';
-        lp.frequency.setValueAtTime(400, t);
-        lp.frequency.exponentialRampToValueAtTime(1800, t + 0.4);
-        lp.frequency.exponentialRampToValueAtTime(300, t + dur);
+        lp.frequency.setValueAtTime(300, t);
+        lp.frequency.exponentialRampToValueAtTime(2200, t + 0.5);
+        lp.frequency.exponentialRampToValueAtTime(280, t + dur);
         lp.Q.value = 2;
         const g1 = ctxA.createGain();
         g1.gain.setValueAtTime(0, t);
-        g1.gain.linearRampToValueAtTime(0.28, t + 0.2);
-        g1.gain.linearRampToValueAtTime(0.12, t + 1.4);
+        g1.gain.linearRampToValueAtTime(0.32, t + 0.25);
+        g1.gain.linearRampToValueAtTime(0.14, t + 1.6);
         g1.gain.linearRampToValueAtTime(0, t + dur);
         o.connect(lp).connect(g1).connect(ctxA.destination);
         o.start(t); o.stop(t + dur + 0.1);
@@ -736,27 +734,27 @@
         src.buffer = noiseBuffer; src.loop = true;
         const bp = ctxA.createBiquadFilter();
         bp.type = 'bandpass';
-        bp.frequency.setValueAtTime(400, t);
-        bp.frequency.exponentialRampToValueAtTime(2200, t + 0.6);
-        bp.frequency.exponentialRampToValueAtTime(600, t + dur);
+        bp.frequency.setValueAtTime(300, t);
+        bp.frequency.exponentialRampToValueAtTime(2600, t + 0.7);
+        bp.frequency.exponentialRampToValueAtTime(500, t + dur);
         bp.Q.value = 1.2;
         const g2 = ctxA.createGain();
         g2.gain.setValueAtTime(0, t);
-        g2.gain.linearRampToValueAtTime(0.22, t + 0.25);
-        g2.gain.linearRampToValueAtTime(0.15, t + 1.2);
+        g2.gain.linearRampToValueAtTime(0.26, t + 0.3);
+        g2.gain.linearRampToValueAtTime(0.16, t + 1.4);
         g2.gain.linearRampToValueAtTime(0, t + dur);
         src.connect(bp).connect(g2).connect(ctxA.destination);
         src.start(t); src.stop(t + dur + 0.1);
 
         const sub = ctxA.createOscillator();
         sub.type = 'sine';
-        sub.frequency.setValueAtTime(90, t);
-        sub.frequency.exponentialRampToValueAtTime(30, t + 0.4);
+        sub.frequency.setValueAtTime(100, t);
+        sub.frequency.exponentialRampToValueAtTime(28, t + 0.5);
         const sg = ctxA.createGain();
-        sg.gain.setValueAtTime(0.35, t);
-        sg.gain.exponentialRampToValueAtTime(0.001, t + 0.7);
+        sg.gain.setValueAtTime(0.4, t);
+        sg.gain.exponentialRampToValueAtTime(0.001, t + 0.9);
         sub.connect(sg).connect(ctxA.destination);
-        sub.start(t); sub.stop(t + 0.8);
+        sub.start(t); sub.stop(t + 1.0);
       }
       function fireballStart() {
         ensureRunning();
@@ -764,13 +762,13 @@
         const src = ctxA.createBufferSource();
         src.buffer = noiseBuffer; src.loop = true;
         const lp = ctxA.createBiquadFilter();
-        lp.type = 'lowpass'; lp.frequency.value = 1200; lp.Q.value = 2;
+        lp.type = 'lowpass'; lp.frequency.value = 1400; lp.Q.value = 2;
         const g = ctxA.createGain();
         g.gain.value = 0;
-        g.gain.linearRampToValueAtTime(0.22, ctxA.currentTime + 0.3);
+        g.gain.linearRampToValueAtTime(0.24, ctxA.currentTime + 0.3);
         const rumble = ctxA.createOscillator();
-        rumble.type = 'sawtooth'; rumble.frequency.value = 65;
-        const rg = ctxA.createGain(); rg.gain.value = 0.06;
+        rumble.type = 'sawtooth'; rumble.frequency.value = 70;
+        const rg = ctxA.createGain(); rg.gain.value = 0.07;
         rumble.connect(rg).connect(g); rumble.start();
         src.connect(lp).connect(g).connect(ctxA.destination); src.start();
         fireballNode = { src, rumble }; fireballGain = g;
@@ -864,8 +862,8 @@
           o.type = 'sine'; o.frequency.value = f; o.detune.value = i * 12;
           const g = ctxA.createGain();
           g.gain.setValueAtTime(0, t);
-          g.gain.linearRampToValueAtTime(0.12, t + 0.5);
-          g.gain.linearRampToValueAtTime(0.08, t + 2.5);
+          g.gain.linearRampToValueAtTime(0.14, t + 0.5);
+          g.gain.linearRampToValueAtTime(0.09, t + 2.5);
           g.gain.linearRampToValueAtTime(0, t + 3.5);
           o.connect(g).connect(ctxA.destination);
           o.start(t); o.stop(t + 3.6);
@@ -898,29 +896,48 @@
     let webcamReady = false, visionReady = false;
     let leftHandLandmarks = null, rightHandLandmarks = null;
     let faceLandmarks = null, faceBlendshapes = null;
+
+    // ============ BLINK STATE ============
+    let eyesClosedNow = false;
+    let eyesWereClosed = false;
+    let blinkCount = 0;
+    let blinkWindowStart = 0;
+    let blinkFlashTimer = 0;   // frames since last blink for visual feedback
+
+    // Sharingan state (2 blinks → mangekyou)
     let sharinganActive = false;
-    let chidoriPrev = false, rasenganPrev = false, sharinganPrev = false;
+    let sharinganTimer = 0;
+    const SHARINGAN_DURATION = 180;   // ~6s
+
+    // Amaterasu state (4 blinks)
+    let amaterasuActive = false, amaterasuTimer = 0;
+    const AMATERASU_DURATION = 240;
+    let amaterasuProgress = 0;
+    const amaterasuFlames = [];
+
+    let chidoriPrev = false, rasenganPrev = false, sharinganAudioPrev = false;
     let fireballPrev = false, mistPrev = false;
 
+    // Water Dragon
     let handsCloseFrames = 0;
     const CLOSE_FRAMES_THRESHOLD = 6;
     const CLOSE_DISTANCE_THRESHOLD = 0.17;
-
     let waterDragonActive = false, waterDragonTimer = 0;
-    const WATER_DRAGON_DURATION = 240;
+    const WATER_DRAGON_DURATION = 260;
     let waterDragonProgress = 0;
 
+    // Rasenshuriken
     let rasenshurikenActive = false, rasenshurikenTimer = 0;
     const RASENSHURIKEN_DURATION = 100;
 
-    // FIREBALL — now mouth-only trigger
+    // Fireball (3D)
     let fireballActive = false, fireballTimer = 0;
-    const FIREBALL_DURATION = 120;
+    const FIREBALL_DURATION = 150;
     let mouthOpenFrames = 0;
-    const MOUTH_OPEN_THRESHOLD = 0.45;   // jawOpen score
-    const MOUTH_OPEN_FRAMES = 3;         // must hold for ~0.1s to avoid stray triggers
+    const MOUTH_OPEN_THRESHOLD = 0.45;
+    const MOUTH_OPEN_FRAMES = 3;
 
-    // KIRIN — reverted to arms-apart → clap sequence
+    // Kirin
     let kirinActive = false, kirinTimer = 0;
     const KIRIN_DURATION = 130;
     let kirinProgress = 0;
@@ -930,14 +947,10 @@
     let kirinCharged = false;
     let kirinChargeGlow = 0;
 
+    // Mist
     let mistActive = false, mistTimer = 0;
     const MIST_DURATION = 300;
     let mistProgress = 0;
-
-    let amaterasuActive = false, amaterasuTimer = 0;
-    const AMATERASU_DURATION = 240;
-    let amaterasuProgress = 0;
-    const amaterasuFlames = [];
 
     let handLandmarker = null, faceLandmarker = null;
     let animationFrame = null, lastVideoTime = -1;
@@ -1083,8 +1096,9 @@
       }
       hudHands.textContent = (leftHandLandmarks ? 1 : 0) + (rightHandLandmarks ? 1 : 0);
 
-      /* FACE */
-      faceLandmarks = null; faceBlendshapes = null; sharinganActive = false;
+      /* FACE + BLINK DETECTION */
+      faceLandmarks = null; faceBlendshapes = null;
+      let eyesClosedRaw = false;
       if (faceResults && faceResults.faceLandmarks && faceResults.faceLandmarks.length) {
         faceLandmarks = faceResults.faceLandmarks[0];
       }
@@ -1092,19 +1106,70 @@
         faceBlendshapes = faceResults.faceBlendshapes[0].categories;
         const l = faceBlendshapes.find(b => b.categoryName === 'eyeBlinkLeft');
         const r = faceBlendshapes.find(b => b.categoryName === 'eyeBlinkRight');
-        sharinganActive = ((l ? l.score : 0) + (r ? r.score : 0)) / 2 > 0.5;
+        eyesClosedRaw = ((l ? l.score : 0) + (r ? r.score : 0)) / 2 > 0.5;
       }
+      eyesClosedNow = eyesClosedRaw;
       hudFace.textContent = faceLandmarks ? 'ON' : 'OFF';
+
+      // Detect closed→open transition (a completed blink)
+      if (eyesClosedNow && !eyesWereClosed) {
+        // eyes just closed
+      }
+      if (!eyesClosedNow && eyesWereClosed) {
+        // eyes just opened → this counts as a blink
+        if (now - blinkWindowStart > 1500) {
+          // window reset if last blink was too long ago
+          blinkCount = 0;
+          blinkWindowStart = now;
+        }
+        blinkCount++;
+        blinkFlashTimer = 20;
+      }
+      eyesWereClosed = eyesClosedNow;
+
+      // Reset blink counter if window expired without activity
+      if (blinkCount > 0 && now - blinkWindowStart > 3000) {
+        blinkCount = 0;
+      }
+      if (blinkFlashTimer > 0) blinkFlashTimer--;
+      hudBlink.textContent = blinkCount;
+
+      // ============ SHARINGAN: 2 blinks within 1.5s ============
+      if (blinkCount >= 2 && !sharinganActive && now - blinkWindowStart < 1500) {
+        sharinganActive = true;
+        sharinganTimer = SHARINGAN_DURATION;
+        blinkCount = 0;
+        flashKanji('写輪眼', getTheme('sharingan').glow);
+      }
+
+      // ============ AMATERASU: 4 blinks within 3s ============
+      if (blinkCount >= 4 && !amaterasuActive && now - blinkWindowStart < 3000 && faceLandmarks) {
+        amaterasuActive = true;
+        amaterasuTimer = AMATERASU_DURATION;
+        blinkCount = 0;
+        Audio.amaterasuCast();
+        flashKanji('天照', getTheme('amaterasu').glow);
+        // Spawn flames at forehead
+        const fh = faceLandmarks[10];
+        for (let i = 0; i < 60; i++) {
+          amaterasuFlames.push({
+            x: fh.x + (Math.random() - 0.5) * 0.06,
+            y: fh.y + (Math.random() - 0.5) * 0.04,
+            vx: (Math.random() - 0.5) * 0.008,
+            vy: -Math.random() * 0.006 - 0.002,
+            life: 1,
+            decay: 0.006 + Math.random() * 0.008,
+            size: 0.02 + Math.random() * 0.03
+          });
+        }
+      }
 
       const jawOpen = faceBlendshapes ?
         (faceBlendshapes.find(b => b.categoryName === 'jawOpen')?.score || 0) : 0;
-      hudMouth.textContent = jawOpen.toFixed(2);
 
       /* ============================================================
-         TRIGGERS
+         HAND TRIGGERS
          ============================================================ */
-
-      // HAND DISTANCE
       let handDist = Infinity;
       if (leftHandLandmarks && rightHandLandmarks) {
         handDist = Math.hypot(
@@ -1113,7 +1178,7 @@
         );
       }
 
-      // WATER DRAGON: hands together
+      // WATER DRAGON
       if (handDist < CLOSE_DISTANCE_THRESHOLD) handsCloseFrames++;
       else {
         if (handsCloseFrames >= CLOSE_FRAMES_THRESHOLD && !waterDragonActive &&
@@ -1122,12 +1187,12 @@
           waterDragonTimer = WATER_DRAGON_DURATION;
           Audio.waterDragonRoar();
           flashKanji('水龍', getTheme('waterDragon').glow);
-          camShakeX = 12; camShakeY = 8;
+          camShakeX = 14; camShakeY = 10;
         }
         handsCloseFrames = 0;
       }
 
-      // RASENSHURIKEN: right hand over left hand, close
+      // RASENSHURIKEN
       if (leftHandLandmarks && rightHandLandmarks &&
           handDist < 0.25 &&
           rightHandLandmarks[0].y < leftHandLandmarks[0].y &&
@@ -1138,30 +1203,24 @@
         flashKanji('螺旋手裏剣', getTheme('rasenshuriken').glow);
       }
 
-      // ============================================================
-      // FIREBALL: OPEN MOUTH ONLY  (new trigger)
-      // ============================================================
+      // FIREBALL (mouth open)
       if (jawOpen > MOUTH_OPEN_THRESHOLD) mouthOpenFrames++;
       else mouthOpenFrames = 0;
 
-      const mouthTriggered = mouthOpenFrames >= MOUTH_OPEN_FRAMES;
-      if (mouthTriggered && !fireballActive && !waterDragonActive && !rasenshurikenActive && !kirinActive) {
+      if (mouthOpenFrames >= MOUTH_OPEN_FRAMES && !fireballActive &&
+          !waterDragonActive && !rasenshurikenActive && !kirinActive) {
         fireballActive = true;
         fireballTimer = FIREBALL_DURATION;
         flashKanji('火球', getTheme('fireball').glow);
       }
 
-      // ============================================================
-      // KIRIN: ARMS APART → CLAP  (classic gesture restored)
-      // ============================================================
+      // KIRIN (arms apart → clap)
       if (leftHandLandmarks && rightHandLandmarks) {
         if (handDist > APART_DISTANCE_THRESHOLD) {
           handsApartFrames++;
-          // Once charged, spawn charge particles between hands
           if (handsApartFrames >= APART_FRAMES_THRESHOLD) {
             kirinCharged = true;
             kirinChargeGlow = Math.min(1, kirinChargeGlow + 0.1);
-            // Spawn a spark between hands occasionally
             if (Math.random() < 0.7) {
               const cx = (leftHandLandmarks[0].x + rightHandLandmarks[0].x) / 2;
               const cy = (leftHandLandmarks[0].y + rightHandLandmarks[0].y) / 2;
@@ -1175,7 +1234,6 @@
             }
           }
         } else if (handDist < CLOSE_DISTANCE_THRESHOLD && kirinCharged && !kirinActive) {
-          // CLAP → fire Kirin
           kirinActive = true;
           kirinTimer = KIRIN_DURATION;
           kirinCharged = false;
@@ -1185,7 +1243,6 @@
           flashKanji('麒麟', getTheme('kirin').glow);
           camShakeX = 25; camShakeY = 18;
         } else if (handDist > CLOSE_DISTANCE_THRESHOLD && handDist < APART_DISTANCE_THRESHOLD) {
-          // In the middle — decay the charge slowly
           handsApartFrames = Math.max(0, handsApartFrames - 1);
           if (handsApartFrames < APART_FRAMES_THRESHOLD) kirinCharged = false;
         }
@@ -1193,47 +1250,21 @@
         handsApartFrames = Math.max(0, handsApartFrames - 1);
         if (handsApartFrames < APART_FRAMES_THRESHOLD) kirinCharged = false;
       }
-      // Decay charge glow when not charged
       if (!kirinCharged) kirinChargeGlow = Math.max(0, kirinChargeGlow - 0.05);
 
-      // MIST: blink + both hands visible
-      const mistTrigger = sharinganActive && leftHandLandmarks && rightHandLandmarks;
-      if (mistTrigger && !mistActive && !amaterasuActive && !kirinCharged) {
+      // MIST: 2 blinks + both hands visible
+      if (sharinganActive && leftHandLandmarks && rightHandLandmarks &&
+          !mistActive && !amaterasuActive && !kirinCharged) {
         mistActive = true;
         mistTimer = MIST_DURATION;
         flashKanji('霧隠れ', getTheme('mist').glow);
       }
 
-      // AMATERASU: blink + look up
-      let amaterasuTrigger = false;
-      if (sharinganActive && faceLandmarks) {
-        const nose = faceLandmarks[1];
-        const forehead = faceLandmarks[10];
-        const chin = faceLandmarks[152];
-        const upDown = nose.y - forehead.y;
-        const chinDelta = chin.y - nose.y;
-        if (upDown < 0.055 && chinDelta > 0.11) amaterasuTrigger = true;
-      }
-      if (amaterasuTrigger && !amaterasuActive && !mistActive && faceLandmarks) {
-        amaterasuActive = true;
-        amaterasuTimer = AMATERASU_DURATION;
-        Audio.amaterasuCast();
-        flashKanji('天照', getTheme('amaterasu').glow);
-        const fh = faceLandmarks[10];
-        for (let i = 0; i < 50; i++) {
-          amaterasuFlames.push({
-            x: fh.x + (Math.random() - 0.5) * 0.06,
-            y: fh.y + (Math.random() - 0.5) * 0.04,
-            vx: (Math.random() - 0.5) * 0.008,
-            vy: -Math.random() * 0.006 - 0.002,
-            life: 1,
-            decay: 0.006 + Math.random() * 0.008,
-            size: 0.02 + Math.random() * 0.03
-          });
-        }
-      }
-
       // TIMERS
+      if (sharinganActive) {
+        sharinganTimer--;
+        if (sharinganTimer <= 0) sharinganActive = false;
+      }
       if (waterDragonActive) {
         waterDragonTimer--;
         waterDragonProgress = 1 - waterDragonTimer / WATER_DRAGON_DURATION;
@@ -1263,7 +1294,6 @@
         if (amaterasuTimer <= 0) { amaterasuActive = false; amaterasuProgress = 0; }
       }
 
-      // Screen shake decay
       camShakeX *= 0.9;
       camShakeY *= 0.9;
 
@@ -1278,9 +1308,9 @@
       if (!rasenganOn && rasenganPrev) Audio.rasenganStop();
       rasenganPrev = rasenganOn;
 
-      if (sharinganActive && !sharinganPrev) Audio.sharinganStart();
-      if (!sharinganActive && sharinganPrev) Audio.sharinganStop();
-      sharinganPrev = sharinganActive;
+      if (sharinganActive && !sharinganAudioPrev) Audio.sharinganStart();
+      if (!sharinganActive && sharinganAudioPrev) Audio.sharinganStop();
+      sharinganAudioPrev = sharinganActive;
 
       if (fireballActive && !fireballPrev) Audio.fireballStart();
       if (!fireballActive && fireballPrev) Audio.fireballStop();
@@ -1299,30 +1329,22 @@
       ctx.save();
       ctx.translate(camShakeX, camShakeY);
 
-      // Mist backdrop
       if (mistActive) drawMist(mistProgress, w, h, now);
-
-      // Sharingan
       if (sharinganActive && faceLandmarks) drawSharinganOnFace(faceLandmarks, w, h);
-
-      // Amaterasu
       if (amaterasuActive || amaterasuFlames.length) updateAmaterasu(w, h);
 
-      // Chidori
       if (leftHandLandmarks && !rasenshurikenActive && !kirinActive && !fireballActive) {
         drawChidori(leftHandLandmarks, w, h, now);
       }
       updateStatus(statusEls.chidori, leftHandLandmarks && !rasenshurikenActive && !kirinActive && !fireballActive,
         'ACTIVE', 'RAISE LEFT HAND');
 
-      // Rasengan
       if (rightHandLandmarks && !rasenshurikenActive && !fireballActive && !kirinActive) {
         drawRasengan(rightHandLandmarks, w, h, now);
       }
       updateStatus(statusEls.rasengan, rightHandLandmarks && !rasenshurikenActive && !fireballActive && !kirinActive,
         'ACTIVE', 'RAISE RIGHT HAND');
 
-      // Rasenshuriken
       if (rasenshurikenActive) {
         const anchor = rightHandLandmarks || leftHandLandmarks;
         if (anchor) drawRasenshuriken(anchor, w, h, now, rasenshurikenTimer / RASENSHURIKEN_DURATION);
@@ -1330,8 +1352,14 @@
       updateStatus(statusEls.rasenshuriken, rasenshurikenActive,
         rasenshurikenActive ? 'CAST' : 'IDLE', 'R-HAND ON L-HAND');
 
-      // Sharingan status
-      updateStatus(statusEls.sharingan, sharinganActive, 'ACTIVE', 'BLINK');
+      // Sharingan status — show blink countdown
+      if (sharinganActive) {
+        updateStatus(statusEls.sharingan, true, `ACTIVE ${Math.ceil(sharinganTimer / 30)}s`, 'BLINK ×2');
+      } else if (blinkCount > 0 && now - blinkWindowStart < 1500) {
+        updateStatus(statusEls.sharingan, false, `BLINK ${blinkCount}/2`, `BLINK ${blinkCount}/2`);
+      } else {
+        updateStatus(statusEls.sharingan, false, 'IDLE', 'BLINK ×2');
+      }
 
       // Water Dragon
       if (waterDragonActive) drawWaterDragon(waterDragonProgress, w, h, now);
@@ -1339,13 +1367,12 @@
         waterDragonActive ? 'CASTING' : (handsCloseFrames > 0 ? 'CHARGING' : 'IDLE'),
         'HANDS TOGETHER');
 
-      // Fireball
+      // Fireball (3D)
       if (fireballActive && faceLandmarks) {
         const mouth = { x: faceLandmarks[13].x, y: faceLandmarks[13].y };
-        drawFireball(mouth, w, h, now, fireballTimer / FIREBALL_DURATION);
+        drawFireball3D(mouth, w, h, now, 1 - fireballTimer / FIREBALL_DURATION);
         spawnFireParticles(mouth, w, h);
       }
-      // Status shows live mouth state
       if (fireballActive) {
         updateStatus(statusEls.fireball, true, 'CASTING', 'OPEN MOUTH');
       } else if (mouthOpenFrames > 0) {
@@ -1356,7 +1383,6 @@
 
       // Kirin
       if (kirinActive) drawKirin(kirinProgress, w, h, now);
-      // Draw charge indicator when kirin is being charged
       if (kirinCharged && leftHandLandmarks && rightHandLandmarks && !kirinActive) {
         drawKirinCharge(leftHandLandmarks, rightHandLandmarks, w, h, now, kirinChargeGlow);
       }
@@ -1371,21 +1397,32 @@
       }
 
       // Mist
-      updateStatus(statusEls.mist, mistActive, 'ACTIVE', 'BLINK + HANDS OUT');
+      updateStatus(statusEls.mist, mistActive, 'ACTIVE', 'BLINK ×2 + HANDS OUT');
 
       // Amaterasu
-      updateStatus(statusEls.amaterasu, amaterasuActive,
-        amaterasuActive ? 'BURNING' : 'IDLE', 'BLINK + LOOK UP');
+      if (amaterasuActive) {
+        updateStatus(statusEls.amaterasu, true, `BURNING ${Math.ceil(amaterasuTimer / 30)}s`, 'BLINK ×4');
+      } else if (blinkCount >= 2 && now - blinkWindowStart < 3000) {
+        updateStatus(statusEls.amaterasu, false, `BLINK ${blinkCount}/4`, `BLINK ${blinkCount}/4`);
+      } else {
+        updateStatus(statusEls.amaterasu, false, 'IDLE', 'BLINK ×4');
+      }
 
-      // Particles
       updateSplashes();
       updateFireParticles(w, h);
       updateChargeParticles();
 
       ctx.restore();
-
-      // Film grain overlay
       drawFilmGrain(w, h);
+
+      // Blink flash feedback (white flash on blink)
+      if (blinkFlashTimer > 0) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.fillStyle = `rgba(255, 255, 255, ${blinkFlashTimer / 20 * 0.15})`;
+        ctx.fillRect(0, 0, w, h);
+        ctx.restore();
+      }
 
       animationFrame = requestAnimationFrame(predictLoop);
     }
@@ -1426,18 +1463,6 @@
     /* ============================================================
        PARTICLES
        ============================================================ */
-    function spawnSplashes(w, h, count = 80) {
-      for (let i = 0; i < count; i++) {
-        splashParticles.push({
-          x: w * 0.5 + (Math.random() - 0.5) * w * 0.5,
-          y: h * 0.55 + (Math.random() - 0.5) * h * 0.35,
-          vx: (Math.random() - 0.5) * 8,
-          vy: -Math.random() * 6 - 1,
-          life: 1, decay: 0.01 + Math.random() * 0.01,
-          size: 2 + Math.random() * 6
-        });
-      }
-    }
     function updateSplashes() {
       for (let i = splashParticles.length - 1; i >= 0; i--) {
         const p = splashParticles[i];
@@ -1501,9 +1526,6 @@
         ctx.restore();
       }
     }
-    function spawnLightningFlash() {
-      lightningFlashes.push({ life: 1, decay: 0.06 });
-    }
     function updateLightningFlashes(w, h) {
       for (let i = lightningFlashes.length - 1; i >= 0; i--) {
         const f = lightningFlashes[i];
@@ -1518,18 +1540,16 @@
     }
 
     /* ============================================================
-       KIRIN CHARGE VISUAL — crackling energy between hands
+       KIRIN CHARGE
        ============================================================ */
     function drawKirinCharge(lmLeft, lmRight, w, h, now, intensity) {
       const theme = getTheme('kirin');
       const lx = lmLeft[9].x * w, ly = lmLeft[9].y * h;
       const rx = lmRight[9].x * w, ry = lmRight[9].y * h;
-      const t = now / 1000;
 
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
 
-      // Glow aura around both hands
       [lx, rx].forEach((x, i) => {
         const y = i === 0 ? ly : ry;
         const g = ctx.createRadialGradient(x, y, 0, x, y, 80);
@@ -1541,7 +1561,6 @@
         ctx.fill();
       });
 
-      // Crackling bolts between hands
       ctx.lineCap = 'round';
       const midX = (lx + rx) / 2, midY = (ly + ry) / 2;
       for (let i = 0; i < 8; i++) {
@@ -1553,9 +1572,10 @@
         const py = midY + (Math.random() - 0.5) * 100;
         for (let s = 1; s <= segs; s++) {
           const tt = s / segs;
-          const jx = start[0] + (px - start[0]) * tt + (Math.random() - 0.5) * 30;
-          const jy = start[1] + (py - start[1]) * tt + (Math.random() - 0.5) * 30;
-          ctx.lineTo(jx, jy);
+          ctx.lineTo(
+            start[0] + (px - start[0]) * tt + (Math.random() - 0.5) * 30,
+            start[1] + (py - start[1]) * tt + (Math.random() - 0.5) * 30
+          );
         }
         ctx.strokeStyle = hexToRgba(theme.core, (0.5 + Math.random() * 0.4) * intensity);
         ctx.lineWidth = 1.5 + Math.random() * 2;
@@ -1563,7 +1583,6 @@
         ctx.shadowBlur = 25;
         ctx.stroke();
       }
-
       ctx.restore();
     }
 
@@ -1815,83 +1834,137 @@
     }
 
     /* ============================================================
-       WATER DRAGON
+       WATER DRAGON — 3D perspective burst
        ============================================================ */
     function drawWaterDragon(progress, w, h, now) {
       const theme = getTheme('waterDragon');
       const t = now / 1000;
+
+      // Fade in/out
       let alpha = 1;
-      if (progress < 0.12) alpha = progress / 0.12;
-      else if (progress > 0.88) alpha = (1 - progress) / 0.12;
+      if (progress < 0.1) alpha = progress / 0.1;
+      else if (progress > 0.9) alpha = (1 - progress) / 0.1;
       alpha = Math.min(1, Math.max(0, alpha));
 
-      const baseX = w * (0.15 + progress * 0.7);
-      const baseY = h * (0.55 - Math.sin(progress * Math.PI) * 0.15);
-      const scale = w / 1280;
+      // ============================================================
+      // 3D PERSPECTIVE: the dragon starts deep in the center of the
+      // screen (small) and bursts FORWARD toward the viewer, growing
+      // huge and sweeping past the camera.
+      // ============================================================
+      //
+      // z: 0 = very far, 1 = right at camera
+      // Use an easing so it accelerates as it comes closer (like
+      // something flying at your face).
+      const z = Math.pow(progress, 1.4);
 
-      if (Math.random() < 0.6) {
+      // Perspective scale: far = 0.15, near = 2.8
+      const perspScale = 0.15 + z * 2.65;
+
+      // Depth fades: darker when far, brighter when close
+      const depthAlpha = 0.35 + z * 0.65;
+
+      // Center of the dragon's origin (in front of camera)
+      const cx = w * 0.5;
+      const cy = h * 0.55;
+
+      // Fan out horizontally as it approaches
+      const lateralDrift = Math.sin(progress * Math.PI * 0.9) * w * 0.15;
+
+      const baseScale = (w / 1280) * perspScale;
+      const baseX = cx + lateralDrift - Math.cos(progress * Math.PI * 0.7) * w * 0.05;
+      const baseY = cy + Math.sin(t * 1.5) * 20 - Math.sin(progress * Math.PI) * h * 0.1;
+
+      const finalAlpha = alpha * depthAlpha;
+
+      // Ambient splash particles shooting past the camera
+      if (Math.random() < 0.85) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 80 + Math.random() * 120;
         splashParticles.push({
-          x: baseX + (Math.random() - 0.5) * 200 * scale,
-          y: baseY + (Math.random() - 0.3) * 100 * scale,
-          vx: (Math.random() - 0.5) * 5,
-          vy: -Math.random() * 5 - 2,
+          x: cx + Math.cos(angle) * dist * perspScale,
+          y: cy + Math.sin(angle) * dist * perspScale * 0.6,
+          vx: Math.cos(angle) * (3 + z * 8) * perspScale,
+          vy: Math.sin(angle) * (3 + z * 8) * perspScale * 0.6 - 2,
           life: 1, decay: 0.02 + Math.random() * 0.015,
-          size: 2 + Math.random() * 5
+          size: (2 + Math.random() * 4) * perspScale
         });
       }
 
       ctx.save();
-      ctx.globalAlpha = alpha;
+      ctx.globalAlpha = finalAlpha;
       ctx.globalCompositeOperation = 'lighter';
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
-      const bodyPoints = 32;
+      // ================= BODY (serpentine, snake-like) =================
+      const bodyPoints = 42;
       const pts = [];
       for (let i = 0; i < bodyPoints; i++) {
         const p = i / (bodyPoints - 1);
-        const angle = t * 1.2 + p * 6;
-        const arcX = Math.cos(angle) * (30 + p * 60) * scale;
-        const arcY = Math.sin(angle * 1.4) * (25 + p * 40) * scale;
+        const angle = t * 1.6 + p * 7;
+        const arcX = Math.cos(angle) * (35 + p * 70) * baseScale;
+        const arcY = Math.sin(angle * 1.35) * (28 + p * 55) * baseScale;
+
+        // The head is at p=1 and nearest to camera; the tail is deep
+        const tailDepth = 0.4 + p * 0.6; // tail further back
+        const depthMul = (perspScale * 0.5 + tailDepth * perspScale * 0.5);
+
         pts.push({
-          x: baseX - p * 480 * scale + arcX,
-          y: baseY + arcY - Math.sin(p * Math.PI) * 40 * scale,
-          r: (22 - p * 14) * scale
+          x: baseX - p * 520 * baseScale + arcX,
+          y: baseY + arcY - Math.sin(p * Math.PI) * 60 * baseScale,
+          r: (26 - p * 16) * baseScale,
+          depth: depthMul
         });
       }
 
-      ctx.shadowColor = theme.glow; ctx.shadowBlur = 60 * scale;
-      ctx.strokeStyle = hexToRgba(theme.glow, 0.5 * alpha);
-      ctx.lineWidth = 32 * scale;
-      ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+      // Outer glow
+      ctx.shadowColor = theme.glow;
+      ctx.shadowBlur = 80 * baseScale;
+      ctx.strokeStyle = hexToRgba(theme.glow, 0.55 * finalAlpha);
+      ctx.lineWidth = 38 * baseScale;
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
       for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
       ctx.stroke();
 
+      // Main body — triple gradient
       for (let pass = 0; pass < 3; pass++) {
-        const grad = ctx.createLinearGradient(baseX - 500 * scale, baseY, baseX, baseY - 200 * scale);
-        grad.addColorStop(0, hexToRgba(darken(theme.edge, 0.4), 0.85 * alpha));
-        grad.addColorStop(0.35, hexToRgba(theme.mid, 0.95 * alpha));
-        grad.addColorStop(0.7, hexToRgba(theme.core, 0.95 * alpha));
-        grad.addColorStop(1, hexToRgba(theme.glow, 0.9 * alpha));
+        const grad = ctx.createLinearGradient(
+          baseX - 600 * baseScale, baseY,
+          baseX, baseY - 250 * baseScale
+        );
+        grad.addColorStop(0, hexToRgba(darken(theme.edge, 0.5), 0.9 * finalAlpha));
+        grad.addColorStop(0.35, hexToRgba(theme.mid, 0.98 * finalAlpha));
+        grad.addColorStop(0.7, hexToRgba(theme.core, 0.95 * finalAlpha));
+        grad.addColorStop(1, hexToRgba(theme.glow, 0.9 * finalAlpha));
         ctx.strokeStyle = grad;
-        ctx.lineWidth = (22 - pass * 6) * scale;
-        ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+        ctx.lineWidth = (26 - pass * 7) * baseScale;
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x, pts[0].y);
         for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
         ctx.stroke();
       }
 
+      // Scales — hundreds of little specular dots
       for (let i = 0; i < pts.length; i++) {
         const p = pts[i];
-        for (let k = 0; k < 5; k++) {
-          const a = (k / 5) * Math.PI * 2 + t * 3 + i * 0.5;
-          const r = p.r * (1 + Math.sin(a * 2 + t * 4) * 0.15);
+        for (let k = 0; k < 6; k++) {
+          const a = (k / 6) * Math.PI * 2 + t * 3 + i * 0.4;
+          const r = p.r * (1 + Math.sin(a * 2 + t * 4) * 0.18);
           ctx.beginPath();
-          ctx.arc(p.x + Math.cos(a) * r, p.y + Math.sin(a) * r, 1.8 * scale, 0, Math.PI * 2);
-          ctx.fillStyle = hexToRgba(theme.core, 0.6 * alpha); ctx.fill();
+          ctx.arc(
+            p.x + Math.cos(a) * r,
+            p.y + Math.sin(a) * r,
+            2.2 * baseScale,
+            0, Math.PI * 2
+          );
+          ctx.fillStyle = hexToRgba(theme.core, 0.65 * finalAlpha);
+          ctx.fill();
         }
       }
 
-      ctx.fillStyle = hexToRgba(theme.glow, 0.8 * alpha);
+      // Dorsal spikes
+      ctx.fillStyle = hexToRgba(theme.glow, 0.85 * finalAlpha);
       for (let i = 2; i < pts.length - 2; i += 3) {
         const p = pts[i], prev = pts[i - 1];
         const dx = p.x - prev.x, dy = p.y - prev.y;
@@ -1899,149 +1972,280 @@
         const nx = -dy / len, ny = dx / len;
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
-        ctx.lineTo(p.x + nx * p.r * 1.2, p.y + ny * p.r * 1.2);
+        ctx.lineTo(p.x + nx * p.r * 1.4, p.y + ny * p.r * 1.4);
         ctx.lineTo(prev.x, prev.y);
         ctx.closePath(); ctx.fill();
       }
 
-      [8, 14, 20, 26].forEach((idx, li) => {
+      // ================= 4 CLAWED LIMBS =================
+      [10, 17, 24, 32].forEach((idx, li) => {
         if (idx >= pts.length) return;
         const p = pts[idx];
-        const swing = Math.sin(t * 3 + li * 1.3) * 30 * scale;
-        const legLen = 70 * scale;
+        const swing = Math.sin(t * 3.5 + li * 1.3) * 35 * baseScale;
+        const legLen = 90 * baseScale;
         const dirY = li % 2 === 0 ? 1 : -1;
-        const kneeX = p.x + swing * 0.5, kneeY = p.y + dirY * legLen * 0.5;
-        const footX = p.x + swing, footY = p.y + dirY * legLen;
-        ctx.strokeStyle = hexToRgba(theme.mid, 0.85 * alpha);
-        ctx.lineWidth = 10 * scale;
+        const kneeX = p.x + swing * 0.4;
+        const kneeY = p.y + dirY * legLen * 0.45;
+        const footX = p.x + swing;
+        const footY = p.y + dirY * legLen;
+        ctx.strokeStyle = hexToRgba(theme.mid, 0.9 * finalAlpha);
+        ctx.lineWidth = 14 * baseScale;
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
         ctx.quadraticCurveTo(kneeX, kneeY, footX, footY);
         ctx.stroke();
-        ctx.strokeStyle = hexToRgba(theme.core, 0.95 * alpha);
-        ctx.lineWidth = 3 * scale;
+        // Talons
+        ctx.strokeStyle = hexToRgba(theme.core, 0.98 * finalAlpha);
+        ctx.lineWidth = 4 * baseScale;
         for (let c = -1; c <= 1; c++) {
           ctx.beginPath();
           ctx.moveTo(footX, footY);
-          ctx.lineTo(footX + c * 12 * scale, footY + dirY * 20 * scale);
+          ctx.lineTo(footX + c * 16 * baseScale, footY + dirY * 26 * baseScale);
           ctx.stroke();
         }
       });
 
+      // ================= HEAD =================
       const head = pts[pts.length - 1];
       const neck = pts[pts.length - 3];
       const angle = Math.atan2(head.y - neck.y, head.x - neck.x);
-      const headR = 60 * scale;
+      const headR = 78 * baseScale;
 
       ctx.save();
       ctx.translate(head.x, head.y);
       ctx.rotate(angle);
 
-      const auraG = ctx.createRadialGradient(0, 0, headR * 0.4, 0, 0, headR * 2.2);
-      auraG.addColorStop(0, hexToRgba(theme.core, 0.7 * alpha));
+      // Head aura (huge bloom)
+      const auraG = ctx.createRadialGradient(0, 0, headR * 0.3, 0, 0, headR * 2.8);
+      auraG.addColorStop(0, hexToRgba(theme.core, 0.85 * finalAlpha));
+      auraG.addColorStop(0.5, hexToRgba(theme.glow, 0.5 * finalAlpha));
       auraG.addColorStop(1, hexToRgba(theme.edge, 0));
-      ctx.beginPath(); ctx.arc(0, 0, headR * 2.2, 0, Math.PI * 2);
-      ctx.fillStyle = auraG; ctx.fill();
-
       ctx.beginPath();
-      ctx.moveTo(-headR * 0.4, -headR * 0.9);
-      ctx.quadraticCurveTo(headR * 0.3, -headR * 1.1, headR * 1.6, -headR * 0.3);
-      ctx.quadraticCurveTo(headR * 1.9, 0, headR * 1.6, headR * 0.3);
-      ctx.quadraticCurveTo(headR * 0.3, headR * 1.1, -headR * 0.4, headR * 0.9);
-      ctx.quadraticCurveTo(-headR * 0.9, 0, -headR * 0.4, -headR * 0.9);
-      ctx.closePath();
-      const headG = ctx.createRadialGradient(-headR * 0.3, -headR * 0.3, headR * 0.1, 0, 0, headR * 1.8);
-      headG.addColorStop(0, hexToRgba(theme.core, alpha));
-      headG.addColorStop(0.4, hexToRgba(theme.mid, 0.95 * alpha));
-      headG.addColorStop(1, hexToRgba(theme.edge, 0.9 * alpha));
-      ctx.fillStyle = headG; ctx.fill();
-      ctx.strokeStyle = hexToRgba(theme.core, 0.95 * alpha);
-      ctx.lineWidth = 3 * scale; ctx.stroke();
+      ctx.arc(0, 0, headR * 2.8, 0, Math.PI * 2);
+      ctx.fillStyle = auraG;
+      ctx.fill();
 
-      ctx.fillStyle = hexToRgba('#ffffff', alpha);
-      for (let i = 0; i < 5; i++) {
-        const tx = headR * (0.55 + i * 0.22), ty = headR * (0.4 - i * 0.02);
+      // Head silhouette — elongated snout
+      ctx.beginPath();
+      ctx.moveTo(-headR * 0.5, -headR * 1.0);
+      ctx.quadraticCurveTo(headR * 0.2, -headR * 1.2, headR * 1.5, -headR * 0.5);
+      ctx.quadraticCurveTo(headR * 2.0, -headR * 0.1, headR * 2.0, headR * 0.15);
+      ctx.quadraticCurveTo(headR * 1.5, headR * 0.6, headR * 0.3, headR * 1.1);
+      ctx.quadraticCurveTo(-headR * 0.5, headR * 1.0, -headR * 0.9, headR * 0.4);
+      ctx.quadraticCurveTo(-headR * 1.1, 0, -headR * 0.9, -headR * 0.4);
+      ctx.quadraticCurveTo(-headR * 0.7, -headR * 0.9, -headR * 0.5, -headR * 1.0);
+      ctx.closePath();
+      const headG = ctx.createRadialGradient(-headR * 0.35, -headR * 0.35, headR * 0.1, 0, 0, headR * 2);
+      headG.addColorStop(0, hexToRgba(theme.core, finalAlpha));
+      headG.addColorStop(0.4, hexToRgba(theme.mid, 0.98 * finalAlpha));
+      headG.addColorStop(1, hexToRgba(theme.edge, 0.92 * finalAlpha));
+      ctx.fillStyle = headG;
+      ctx.fill();
+      ctx.strokeStyle = hexToRgba(theme.core, finalAlpha);
+      ctx.lineWidth = 4 * baseScale;
+      ctx.stroke();
+
+      // Jaw line
+      ctx.beginPath();
+      ctx.moveTo(headR * 0.25, headR * 0.4);
+      ctx.quadraticCurveTo(headR * 1.0, headR * 0.55, headR * 1.9, headR * 0.15);
+      ctx.strokeStyle = hexToRgba(darken(theme.edge, 0.4), 0.9 * finalAlpha);
+      ctx.lineWidth = 3 * baseScale;
+      ctx.stroke();
+
+      // Teeth
+      ctx.fillStyle = hexToRgba('#ffffff', finalAlpha);
+      for (let i = 0; i < 7; i++) {
+        const tx = headR * (0.6 + i * 0.2);
+        const ty = headR * (0.42 - i * 0.015);
         ctx.beginPath();
-        ctx.moveTo(tx, ty); ctx.lineTo(tx + 5 * scale, ty + 6 * scale);
-        ctx.lineTo(tx + 10 * scale, ty + 1 * scale);
-        ctx.closePath(); ctx.fill();
+        ctx.moveTo(tx, ty);
+        ctx.lineTo(tx + 6 * baseScale, ty + 8 * baseScale);
+        ctx.lineTo(tx + 12 * baseScale, ty + 2 * baseScale);
+        ctx.closePath();
+        ctx.fill();
       }
 
-      ctx.shadowColor = '#ffff99'; ctx.shadowBlur = 30 * scale;
-      ctx.fillStyle = hexToRgba('#fffbb0', alpha);
+      // Glowing eye
+      ctx.shadowColor = '#ffff99';
+      ctx.shadowBlur = 40 * baseScale;
+      ctx.fillStyle = hexToRgba('#fffbb0', finalAlpha);
       ctx.beginPath();
-      ctx.ellipse(headR * 0.55, -headR * 0.25, headR * 0.22, headR * 0.14, -0.2, 0, Math.PI * 2);
+      ctx.ellipse(headR * 0.7, -headR * 0.3, headR * 0.28, headR * 0.18, -0.2, 0, Math.PI * 2);
       ctx.fill();
       ctx.shadowBlur = 0;
-      ctx.fillStyle = '#000';
+      ctx.fillStyle = hexToRgba('#000', finalAlpha);
       ctx.beginPath();
-      ctx.ellipse(headR * 0.55, -headR * 0.25, headR * 0.06, headR * 0.13, -0.2, 0, Math.PI * 2);
+      ctx.ellipse(headR * 0.7, -headR * 0.3, headR * 0.08, headR * 0.16, -0.2, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.strokeStyle = hexToRgba(theme.core, 0.95 * alpha);
-      ctx.lineWidth = 5 * scale; ctx.lineCap = 'round';
+      // Horns (swept back)
+      ctx.strokeStyle = hexToRgba(theme.core, finalAlpha);
+      ctx.lineWidth = 7 * baseScale;
+      ctx.lineCap = 'round';
       ctx.beginPath();
-      ctx.moveTo(-headR * 0.2, -headR * 0.85);
-      ctx.quadraticCurveTo(-headR * 1.0, -headR * 1.4, -headR * 1.8, -headR * 1.0);
+      ctx.moveTo(-headR * 0.3, -headR * 0.95);
+      ctx.quadraticCurveTo(-headR * 1.2, -headR * 1.6, -headR * 2.2, -headR * 1.1);
       ctx.stroke();
       ctx.beginPath();
-      ctx.moveTo(headR * 0.1, -headR * 0.95);
-      ctx.quadraticCurveTo(-headR * 0.6, -headR * 1.6, -headR * 1.4, -headR * 1.4);
+      ctx.moveTo(headR * 0.1, -headR * 1.05);
+      ctx.quadraticCurveTo(-headR * 0.7, -headR * 1.8, -headR * 1.7, -headR * 1.5);
       ctx.stroke();
 
-      ctx.strokeStyle = hexToRgba(theme.glow, 0.85 * alpha);
-      ctx.lineWidth = 2.5 * scale;
+      // Whiskers (whipping behind)
+      ctx.strokeStyle = hexToRgba(theme.glow, 0.9 * finalAlpha);
+      ctx.lineWidth = 3 * baseScale;
       for (let i = -1; i <= 1; i++) {
         if (i === 0) continue;
         ctx.beginPath();
-        ctx.moveTo(headR * 1.5, i * headR * 0.2);
-        const wave = Math.sin(t * 5 + i) * 25 * scale;
-        ctx.quadraticCurveTo(headR * 2.6, i * headR * 0.6 + wave, headR * 3.8, i * headR * 1.0 + wave * 1.5);
+        ctx.moveTo(headR * 1.9, i * headR * 0.25);
+        const wave = Math.sin(t * 6 + i * 2) * 35 * baseScale;
+        ctx.quadraticCurveTo(
+          headR * 3.0, i * headR * 0.7 + wave,
+          headR * 4.5, i * headR * 1.2 + wave * 1.6
+        );
         ctx.stroke();
       }
+
+      // Mane/crest
+      ctx.fillStyle = hexToRgba(theme.mid, 0.8 * finalAlpha);
+      for (let i = 0; i < 7; i++) {
+        const mx = -headR * (0.5 + i * 0.35);
+        const my = (i % 2 === 0 ? -1 : 1) * headR * (0.5 + i * 0.12);
+        const wave = Math.sin(t * 4 + i) * 10 * baseScale;
+        ctx.beginPath();
+        ctx.moveTo(-headR * 0.3, 0);
+        ctx.quadraticCurveTo(mx, my + wave, mx - 25 * baseScale, my * 1.3 + wave);
+        ctx.quadraticCurveTo(mx + 6 * baseScale, my * 0.7, -headR * 0.3, headR * 0.15 * (i % 2 === 0 ? -1 : 1));
+        ctx.closePath();
+        ctx.fill();
+      }
       ctx.restore();
+
+      // Foreground splashes (bigger, closer)
+      for (let i = 0; i < 30; i++) {
+        const a = t * 3.5 + i * 0.7;
+        const r = (100 + (i * 27) % 280) * baseScale;
+        const sx = baseX + Math.cos(a) * r;
+        const sy = baseY + Math.sin(a * 1.4) * r * 0.5;
+        ctx.beginPath();
+        ctx.arc(sx, sy, (2 + Math.random() * 3.5) * baseScale, 0, Math.PI * 2);
+        ctx.fillStyle = hexToRgba(theme.core, 0.65 * finalAlpha);
+        ctx.fill();
+      }
+
       ctx.restore();
     }
 
     /* ============================================================
-       FIREBALL
+       FIREBALL 3D — bursts out of screen
        ============================================================ */
-    function drawFireball(mouth, w, h, now, lifeRatio) {
+    function drawFireball3D(mouth, w, h, now, progress) {
       const theme = getTheme('fireball');
-      const cx = mouth.x * w, cy = mouth.y * h;
       const t = now / 1000;
-      const baseR = 60 + (1 - lifeRatio) * 120;
-      const alpha = Math.min(1, lifeRatio * 3) * (lifeRatio > 0.9 ? (1 - lifeRatio) * 10 : 1);
-      const a = Math.min(1, alpha);
+
+      // Perspective: 0 = forming at mouth, 1 = at camera
+      const z = Math.pow(Math.min(1, progress * 1.3), 1.5);
+
+      // Scale grows from small (at mouth) to massive (at camera)
+      const startR = 40;
+      const endR = 480;
+      const baseR = startR + z * (endR - startR);
+
+      // Alpha: fade in fast, fade out near end
+      let alpha = 1;
+      if (progress < 0.08) alpha = progress / 0.08;
+      else if (progress > 0.85) alpha = (1 - progress) / 0.15;
+      alpha = Math.min(1, Math.max(0, alpha));
+
+      // Position: fireball's origin moves from mouth toward screen center
+      const originX = mouth.x * w;
+      const originY = mouth.y * h;
+      const cx = originX + (w * 0.5 - originX) * z * 0.7;
+      const cy = originY + (h * 0.5 - originY) * z * 0.7;
 
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
-      for (let i = 4; i >= 0; i--) {
-        const r = baseR + i * 30 + Math.sin(t * 4 + i) * 8;
-        const ga = 0.22 - i * 0.035;
+
+      // ============= OUTER SMOKE / HEAT HAZE =============
+      for (let i = 5; i >= 0; i--) {
+        const r = baseR * (0.8 + i * 0.35);
+        const a = (0.22 - i * 0.03) * alpha;
         const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-        g.addColorStop(0, hexToRgba(theme.core, ga * a));
-        g.addColorStop(0.4, hexToRgba(theme.mid, ga * a));
-        g.addColorStop(0.75, hexToRgba(theme.edge, ga * 0.7 * a));
+        g.addColorStop(0, hexToRgba(theme.core, a));
+        g.addColorStop(0.35, hexToRgba(theme.mid, a * 0.9));
+        g.addColorStop(0.7, hexToRgba(theme.glow, a * 0.7));
         g.addColorStop(1, hexToRgba(theme.edge, 0));
-        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.fillStyle = g; ctx.fill();
-      }
-      const coreG = ctx.createRadialGradient(cx, cy, 0, cx, cy, baseR * 0.7);
-      coreG.addColorStop(0, hexToRgba('#ffffff', a));
-      coreG.addColorStop(0.4, hexToRgba(theme.mid, 0.95 * a));
-      coreG.addColorStop(0.8, hexToRgba(theme.glow, 0.85 * a));
-      coreG.addColorStop(1, hexToRgba(theme.edge, 0));
-      ctx.beginPath(); ctx.arc(cx, cy, baseR * 0.7, 0, Math.PI * 2);
-      ctx.fillStyle = coreG; ctx.fill();
-      for (let i = 0; i < 8; i++) {
-        const a2 = t * 2 + i * 0.8;
-        const r = baseR * (0.8 + (i % 3) * 0.3);
         ctx.beginPath();
-        ctx.arc(cx + Math.cos(a2) * r, cy + Math.sin(a2) * r, 3 + Math.random() * 3, 0, Math.PI * 2);
-        ctx.fillStyle = hexToRgba(theme.core, a * 0.7);
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fillStyle = g;
         ctx.fill();
       }
+
+      // ============= INNER CORE =============
+      const coreR = baseR * 0.55;
+      const coreG = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreR);
+      coreG.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
+      coreG.addColorStop(0.25, hexToRgba(theme.core, alpha));
+      coreG.addColorStop(0.6, hexToRgba(theme.mid, 0.95 * alpha));
+      coreG.addColorStop(1, hexToRgba(theme.edge, 0));
+      ctx.beginPath();
+      ctx.arc(cx, cy, coreR, 0, Math.PI * 2);
+      ctx.fillStyle = coreG;
+      ctx.fill();
+
+      // ============= FLAME TONGUES =============
+      // Tongues stream back toward the mouth origin
+      const tongueCount = 14;
+      for (let i = 0; i < tongueCount; i++) {
+        const baseAngle = (i / tongueCount) * Math.PI * 2 + t * 1.5;
+        const tongueLen = baseR * (1.4 + Math.sin(t * 6 + i) * 0.3);
+        const tx = cx + Math.cos(baseAngle) * tongueLen;
+        const ty = cy + Math.sin(baseAngle) * tongueLen;
+
+        const grad = ctx.createLinearGradient(cx, cy, tx, ty);
+        grad.addColorStop(0, hexToRgba(theme.core, 0.85 * alpha));
+        grad.addColorStop(0.5, hexToRgba(theme.mid, 0.55 * alpha));
+        grad.addColorStop(1, hexToRgba(theme.edge, 0));
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        // Wavy flame tip
+        const midX = (cx + tx) / 2 + Math.cos(baseAngle + Math.PI / 2) * 30;
+        const midY = (cy + ty) / 2 + Math.sin(baseAngle + Math.PI / 2) * 30;
+        ctx.quadraticCurveTo(midX, midY, tx, ty);
+        ctx.quadraticCurveTo(midX - Math.cos(baseAngle + Math.PI / 2) * 15, midY - Math.sin(baseAngle + Math.PI / 2) * 15, cx, cy);
+        ctx.fillStyle = grad;
+        ctx.fill();
+      }
+
+      // ============= EMBERS FLYING PAST CAMERA =============
+      // These get big and fast as z→1, like they're flying past your face
+      const emberCount = 20;
+      for (let i = 0; i < emberCount; i++) {
+        const a = t * 3 + i * 0.9;
+        const spawnR = baseR * (0.5 + (i % 4) * 0.3);
+        const ex = cx + Math.cos(a) * spawnR;
+        const ey = cy + Math.sin(a) * spawnR;
+        const emberR = (3 + (i % 3) * 2) * (1 + z * 2);
+        ctx.beginPath();
+        ctx.arc(ex, ey, emberR, 0, Math.PI * 2);
+        ctx.fillStyle = hexToRgba(theme.core, alpha * 0.9);
+        ctx.fill();
+      }
+
+      // ============= SHOCKWAVE RING =============
+      // When the fireball is nearly at the camera, emit an expanding ring
+      if (progress > 0.7) {
+        const ringProg = (progress - 0.7) / 0.3;
+        const ringR = baseR * (1.5 + ringProg * 2);
+        ctx.beginPath();
+        ctx.arc(cx, cy, ringR, 0, Math.PI * 2);
+        ctx.strokeStyle = hexToRgba(theme.core, (1 - ringProg) * 0.6);
+        ctx.lineWidth = 12 * (1 - ringProg);
+        ctx.stroke();
+      }
+
       ctx.restore();
     }
 
@@ -2256,6 +2460,8 @@
       mouthOpenFrames = 0;
       mistActive = false;
       amaterasuActive = false;
+      sharinganActive = false;
+      blinkCount = 0;
       amaterasuFlames.length = 0;
       splashParticles.length = 0;
       fireParticles.length = 0;
